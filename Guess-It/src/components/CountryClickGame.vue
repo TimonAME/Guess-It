@@ -1,9 +1,16 @@
 <template>
-  <div class="game-container">
-    <div class="game-info">
-      <h2>Find: {{ targetCountry?.name }}</h2>
-      <button @click="generateNewTarget">Skip</button>
-      <div class="score">Score: {{ score }}</div>
+  <div class="space-y-6">
+    <div class="flex items-center justify-between bg-white p-4 rounded-lg shadow-sm">
+      <h2 class="text-2xl font-semibold text-gray-800">Find: {{ targetCountry?.name }}</h2>
+      <div class="flex items-center space-x-4">
+        <div class="text-lg font-medium text-gray-700">Score: {{ score }}</div>
+        <button
+            @click="generateNewTarget"
+            class="px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition-colors"
+        >
+          Skip
+        </button>
+      </div>
     </div>
     <game-map @country-click="handleCountryClick" />
   </div>

@@ -1,7 +1,8 @@
 import { createApp } from 'vue'
 import App from './App.vue'
 import store from './store'
-import 'leaflet/dist/leaflet.css' // Import Leaflet CSS
+import './assets/main.css'
+import 'leaflet/dist/leaflet.css'
 
 const app = createApp(App)
 app.use(store)
