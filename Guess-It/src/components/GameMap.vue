@@ -5,6 +5,7 @@
         v-model:zoom="zoom"
         :center="center"
         :options="mapOptions"
+        @ready="map = $event.target"
     >
       <l-geo-json
           v-if="countriesData.features.length"
@@ -18,140 +19,110 @@
   </div>
 </template>
 
-<script>
-import { ref, computed, onMounted } from 'vue'
+<script setup>
+import { ref, computed, onMounted, watch } from 'vue'
 import { LMap, LGeoJson } from '@vue-leaflet/vue-leaflet'
-import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 
-export default {
-  name: 'GameMap',
-  components: {
-    LMap,
-    LGeoJson
-  },
-  setup(props, { emit }) {
-    const zoom = ref(2)
-    const center = ref([20, 0])
-    const map = ref(null)
-    const countriesData = ref({ type: 'FeatureCollection', features: [] })
-    const hoveredFeature = ref(null)
-    const temporaryColoredFeature = ref(null)
-    const temporaryColor = ref(null)
+const props = defineProps(['selectedLanguage'])
+const emit = defineEmits(['country-click'])
 
-    const mapOptions = {
-      minZoom: 2,
-      maxZoom: 8,
-      zoomControl: true,
-      dragging: true
-    }
+const zoom = ref(2)
+const center = ref([20, 0])
+const map = ref(null)
+const countriesData = ref({ type: 'FeatureCollection', features: [] })
+const hoveredFeature = ref(null)
+const temporaryColoredFeature = ref(null)
+const temporaryColor = ref(null)
 
-    const geoJsonOptions = computed(() => ({
-      /*
-      style: (feature) => ({
-        fillColor: getFeatureColor(feature),
-        weight: feature === hoveredFeature.value ? 5 : 2,
-        opacity: 1,
-        color: 'white',
-        fillOpacity: 0.7
-      }),
-      */
-      onEachFeature: (feature, layer) => {
-        layer.setStyle({
-          fillColor: '#3388ff',
-          weight: 1,
-          opacity: 1,
-          color: 'white',
-          fillOpacity: 0.7
-        })
-      }
-    }))
+const mapOptions = {
+  minZoom: 2,
+  maxZoom: 8,
+  zoomControl: true,
+  dragging: true
+}
 
-    const getFeatureColor = (feature) => {
-      if (feature === temporaryColoredFeature.value) return temporaryColor.value
-      if (feature === hoveredFeature.value) return '#ff8c00'
-      return '#3388ff'
-    }
-
-    const setTemporaryColor = (feature, color, duration) => {
-      temporaryColoredFeature.value = feature
-      temporaryColor.value = color
-
-      setTimeout(() => {
-        temporaryColoredFeature.value = null
-        temporaryColor.value = null
-      }, duration)
-    }
-
-    onMounted(async () => {
-      try {
-        const response = await fetch('https://raw.githubusercontent.com/johan/world.geo.json/master/countries.geo.json')
-        countriesData.value = await response.json()
-      } catch (error) {
-        console.error('Error loading GeoJSON:', error)
-      }
+const geoJsonOptions = computed(() => ({
+  onEachFeature: (feature, layer) => {
+    layer.setStyle({
+      fillColor: '#3388ff',
+      weight: 1,
+      opacity: 1,
+      color: 'white',
+      fillOpacity: 0.7
     })
+  }
+}))
 
-    const handleCountryClick = (e) => {
-      console.log('Country clicked:', e.layer.feature.properties.name)
-      const feature = e.layer.feature
-      emit('country-click', feature, (isCorrect) => {
-        const color = isCorrect ? '#42b983' : '#ff4444'
-        console.log('Guess was:', isCorrect)
-        e.layer.setStyle({
-          fillColor: color,
-          fillOpacity: 0.7
-        })
-        setTimeout(() => {
-          if (temporaryColoredFeature.value !== feature) {
-            e.layer.setStyle({
-              fillColor: '#3388ff',
-              fillOpacity: 0.7
-            })
-          }
-        }, 1000)
-      })
-    }
+const setTemporaryColor = (feature, color, duration) => {
+  temporaryColoredFeature.value = feature
+  temporaryColor.value = color
 
-    const handleMouseOver = (e) => {
-      /*
-      if (e.layer.feature !== temporaryColoredFeature.value) {
-        e.layer.setStyle({
-          fillColor: '#ff8c00',
-          fillOpacity: 0.7,
-          weight: 2
-        })
-      }
+  setTimeout(() => {
+    temporaryColoredFeature.value = null
+    temporaryColor.value = null
+  }, duration)
+}
 
-       */
-    }
-
-    const handleMouseOut = (e) => {
-      /*
-      if (e.layer.feature !== temporaryColoredFeature.value) {
-        e.layer.setStyle({
-          fillColor: '#3388ff',
-          fillOpacity: 0.7,
-          weight: 1
-        })
-      }
-
-       */
-    }
-
-    return {
-      zoom,
-      center,
-      map,
-      mapOptions,
-      geoJsonOptions,
-      handleCountryClick,
-      handleMouseOver,
-      handleMouseOut,
-      countriesData
-    }
+const loadCountriesData = async () => {
+  try {
+    const response = await fetch('/ne_10m_admin_0_countries.json')
+    const data = await response.json()
+    countriesData.value = data
+  } catch (error) {
+    console.error('Error loading GeoJSON:', error)
   }
 }
+
+onMounted(loadCountriesData)
+watch(() => props.selectedLanguage, loadCountriesData)
+
+const handleCountryClick = (e) => {
+  console.log('Country clicked:', e.layer.feature.properties[props.selectedLanguage])
+  const feature = e.layer.feature
+  emit('country-click', feature, (isCorrect) => {
+    const color = isCorrect ? '#42b983' : '#ff4444'
+    console.log('Guess was:', isCorrect)
+
+    e.layer.setStyle({
+      fillColor: color,
+      fillOpacity: 0.7
+    })
+    setTimeout(() => {
+      if (temporaryColoredFeature.value !== feature) {
+        e.layer.setStyle({
+          fillColor: '#3388ff',
+          fillOpacity: 0.7
+        })
+      }
+    }, 1000)
+  })
+}
+
+const handleMouseOver = (e) => {
+  if (e.layer.feature !== temporaryColoredFeature.value) {
+    e.layer.setStyle({
+      weight: 3
+    })
+  }
+}
+
+const handleMouseOut = (e) => {
+  if (e.layer.feature !== temporaryColoredFeature.value) {
+    e.layer.setStyle({
+      weight: 1
+    })
+  }
+}
+
+const highlightCountry = (targetCountry) => {
+  console.log('Highlighting:', targetCountry.value.name)
+
+  // TODO: Highlight the target country
+}
+
+
+defineExpose({ highlightCountry })
 </script>
 
 <style scoped>

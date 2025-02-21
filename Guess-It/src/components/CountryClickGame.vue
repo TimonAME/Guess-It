@@ -10,80 +10,77 @@
         >
           Skip
         </button>
+        <button
+            @click="showCountry"
+            class="px-4 py-2 bg-red-100 text-red-700 rounded-md hover:bg-red-200 transition-colors"
+        >
+          Show
+        </button>
       </div>
     </div>
-    <game-map @country-click="handleCountryClick" />
+    <game-map
+        ref="gameMap"
+        @country-click="handleCountryClick"
+        :selected-language="selectedLanguage"
+    />
   </div>
 </template>
 
-<script>
-import { ref, computed, onMounted } from 'vue'
+<script setup>
+import { ref, computed, onMounted, watch } from 'vue'
 import { useStore } from 'vuex'
 import GameMap from './GameMap.vue'
 
-export default {
-  name: 'CountryClickGame',
-  components: { GameMap },
-  setup() {
-    const store = useStore()
-    const score = computed(() => store.state.score)
-    const targetCountry = ref(null)
-    const countries = ref([])
+const props = defineProps(['selectedLanguage'])
 
-    const generateNewTarget = () => {
-      if (countries.value.length > 0) {
-        const randomIndex = Math.floor(Math.random() * countries.value.length)
-        targetCountry.value = countries.value[randomIndex]
-      }
-    }
+const store = useStore()
+const score = computed(() => store.state.score)
+const targetCountry = ref(null)
+const countries = ref([])
 
-    const handleCountryClick = (feature, callback) => {
-      const isCorrect = feature.properties.name === targetCountry.value.name;
-      if (isCorrect) {
-        store.dispatch('handleCorrectAnswer');
-        generateNewTarget();
-      }
-      callback?.(isCorrect);
-    };
-
-    onMounted(async () => {
-      try {
-        const response = await fetch('https://raw.githubusercontent.com/johan/world.geo.json/master/countries.geo.json')
-        const data = await response.json()
-        countries.value = data.features.map(f => ({
-          name: f.properties.name,
-          id: f.id
-        }))
-        generateNewTarget()
-      } catch (error) {
-        console.error('Error loading countries:', error)
-      }
-    })
-
-    return {
-      score,
-      targetCountry,
-      handleCountryClick,
-      generateNewTarget
-    }
+const generateNewTarget = () => {
+  if (countries.value.length > 0) {
+    const randomIndex = Math.floor(Math.random() * countries.value.length)
+    targetCountry.value = countries.value[randomIndex]
   }
 }
+
+const handleCountryClick = (feature, callback) => {
+  const isCorrect = feature.properties[props.selectedLanguage] === targetCountry.value.name
+  if (isCorrect) {
+    store.dispatch('handleCorrectAnswer')
+    generateNewTarget()
+  }
+  callback?.(isCorrect)
+}
+
+const loadCountries = async () => {
+  try {
+    const response = await fetch('/ne_10m_admin_0_countries.json')
+    const data = await response.json()
+    countries.value = data.features.map(f => ({
+      name: f.properties[props.selectedLanguage],
+      id: f.id
+    }))
+    generateNewTarget()
+  } catch (error) {
+    console.error('Error loading countries:', error)
+  }
+}
+
+// In the main component
+const gameMap = ref(null) // Add this ref for the GameMap component
+
+const showCountry = () => {
+  if (targetCountry.value && gameMap.value) {
+    console.log('Showing:', targetCountry.value.name)
+
+    gameMap.value.highlightCountry(targetCountry)
+
+    generateNewTarget()
+  }
+}
+
+onMounted(loadCountries)
+watch(() => props.selectedLanguage, loadCountries)
 </script>
-
-<style scoped>
-.game-container {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-  padding: 1rem;
-}
-
-.game-info {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 0.5rem;
-  background: #f5f5f5;
-  border-radius: 4px;
-}
-</style>

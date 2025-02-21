@@ -20,15 +20,21 @@
             {{ mode.charAt(0).toUpperCase() + mode.slice(1) }} Mode
           </button>
         </div>
+        <div class="mt-4">
+          <label for="language" class="block text-gray-700">Select Language:</label>
+          <select id="language" v-model="selectedLanguage" class="w-full mt-1 p-2 border rounded-md">
+            <option v-for="(label, code) in languages" :key="code" :value="code">{{ label }}</option>
+          </select>
+        </div>
       </div>
     </div>
 
     <!-- Main Content -->
     <div class="flex-1">
-      <div class="p-4">
+      <div class="p-4 flex flex-row gap-4">
         <button
             @click="isNavOpen = !isNavOpen"
-            class="mb-4 p-2 bg-white rounded-lg shadow-sm hover:bg-gray-50 transition-colors"
+            class="w-fit h-fit mb-4 p-2 bg-white rounded-lg shadow-sm hover:bg-gray-50 transition-colors"
         >
           <svg
               class="h-6 w-6 text-gray-600"
@@ -45,53 +51,65 @@
           </svg>
         </button>
 
-        <div class="bg-white rounded-lg shadow-sm p-6">
-          <component :is="currentGameComponent" />
+        <div class="bg-white rounded-lg shadow-sm p-6 flex-1">
+          <component :is="currentGameComponent" :selectedLanguage="selectedLanguage" />
         </div>
       </div>
     </div>
   </div>
 </template>
 
-<script>
+<script setup>
 import { ref, computed } from 'vue'
 import CountryClickGame from './components/CountryClickGame.vue'
 import CountryNameGame from './components/CountryNameGame.vue'
 import BorderPathGame from './components/BorderPathGame.vue'
 
-export default {
-  name: 'App',
-  components: {
-    CountryClickGame,
-    CountryNameGame,
-    BorderPathGame
-  },
-  setup() {
-    const currentMode = ref('click')
-    const gameModes = ['click', 'name', 'path']
-    const isNavOpen = ref(false)
+const currentMode = ref('click')
+const gameModes = ['click', 'name', 'path']
+const isNavOpen = ref(false)
+const selectedLanguage = ref('NAME_DE')
 
-    const currentGameComponent = computed(() => {
-      switch (currentMode.value) {
-        case 'click': return 'CountryClickGame'
-        case 'name': return 'CountryNameGame'
-        case 'path': return 'BorderPathGame'
-        default: return 'CountryClickGame'
-      }
-    })
+const languages = {
+  NAME_AR: 'Arabic',
+  NAME_BN: 'Bengali',
+  NAME_DE: 'German',
+  NAME_EN: 'English',
+  NAME_ES: 'Spanish',
+  NAME_FA: 'Persian',
+  NAME_FR: 'French',
+  NAME_EL: 'Greek',
+  NAME_HE: 'Hebrew',
+  NAME_HI: 'Hindi',
+  NAME_HU: 'Hungarian',
+  NAME_ID: 'Indonesian',
+  NAME_IT: 'Italian',
+  NAME_JA: 'Japanese',
+  NAME_KO: 'Korean',
+  NAME_NL: 'Dutch',
+  NAME_PL: 'Polish',
+  NAME_PT: 'Portuguese',
+  NAME_RU: 'Russian',
+  NAME_SV: 'Swedish',
+  NAME_TR: 'Turkish',
+  NAME_UK: 'Ukrainian',
+  NAME_UR: 'Urdu',
+  NAME_VI: 'Vietnamese',
+  NAME_ZH: 'Chinese (Simplified)',
+  NAME_ZHT: 'Chinese (Traditional)'
+}
 
-    const selectGameMode = (mode) => {
-      currentMode.value = mode
-      isNavOpen.value = false
-    }
-
-    return {
-      currentMode,
-      gameModes,
-      currentGameComponent,
-      selectGameMode,
-      isNavOpen
-    }
+const currentGameComponent = computed(() => {
+  switch (currentMode.value) {
+    case 'click': return CountryClickGame
+    case 'name': return CountryNameGame
+    case 'path': return BorderPathGame
+    default: return CountryClickGame
   }
+})
+
+const selectGameMode = (mode) => {
+  currentMode.value = mode
+  isNavOpen.value = false
 }
 </script>
