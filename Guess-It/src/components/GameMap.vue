@@ -66,7 +66,7 @@ const setTemporaryColor = (feature, color, duration) => {
 
 const loadCountriesData = async () => {
   try {
-    const response = await fetch('/ne_10m_admin_0_countries.json')
+    const response = await fetch('/ne_10m_admin_0_countries_lakes.json')
     const data = await response.json()
     countriesData.value = data
   } catch (error) {

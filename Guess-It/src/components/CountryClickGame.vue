@@ -56,7 +56,7 @@ const handleCountryClick = (feature, callback) => {
 
 const loadCountries = async () => {
   try {
-    const response = await fetch('/ne_10m_admin_0_countries.json')
+    const response = await fetch('/ne_10m_admin_0_countries_lakes.json')
     const data = await response.json()
     countries.value = data.features.map(f => ({
       name: f.properties[props.selectedLanguage],
