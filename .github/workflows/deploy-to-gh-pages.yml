@@ -6,12 +6,12 @@ on:
       - main
 
 jobs:
-  build:
+  deploy:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v2
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
@@ -24,9 +24,14 @@ jobs:
       - name: Build project
         run: npm run build
 
-      - name: Initialize gh-pages branch
+      - name: Configure Git user
         run: |
-          git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git
+          git config --global user.email "timon-a@outlook.at"
+          git config --global user.name "TimonAME"
+
+      - name: Deploy to GitHub Pages
+        run: |
+          git remote set-url origin https://github.com/TimonAME/Guess-It.git
           if git show-ref refs/heads/gh-pages; then
             echo "gh-pages branch already exists."
           else
@@ -36,9 +41,3 @@ jobs:
             git commit --allow-empty -m "Initialize gh-pages branch"
             git push origin gh-pages
           fi
-
-      - name: Deploy to GitHub Pages
-        uses: peaceiris/actions-gh-pages@v3
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./dist
