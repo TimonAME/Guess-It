@@ -1,43 +1,25 @@
 <template>
-  <div class="min-h-screen bg-gray-100 flex">
-    <!-- Navigation Menu -->
-    <div
-        :class="[
-        'bg-white shadow-lg transition-all duration-300 ease-in-out',
-        isNavOpen ? 'w-64' : 'w-0'
-      ]"
-    >
-      <div class="p-4" :class="isNavOpen ? 'block' : 'hidden'">
-        <h2 class="text-lg font-semibold text-gray-700 mb-4">Game Modes</h2>
-        <div class="space-y-2">
-          <button
-              v-for="mode in gameModes"
-              :key="mode"
-              @click="selectGameMode(mode)"
-              class="w-full text-left px-4 py-2 rounded-md transition-colors"
-              :class="currentMode === mode ? 'bg-blue-500 text-white' : 'text-gray-600 hover:bg-gray-100'"
-          >
-            {{ mode.charAt(0).toUpperCase() + mode.slice(1) }} Mode
-          </button>
-        </div>
-        <div class="mt-4">
-          <label for="language" class="block text-gray-700">Select Language:</label>
-          <select id="language" v-model="selectedLanguage" class="w-full mt-1 p-2 border rounded-md">
-            <option v-for="(label, code) in languages" :key="code" :value="code">{{ label }}</option>
-          </select>
-        </div>
-      </div>
-    </div>
+  <div class="min-h-screen relative background-pattern">
+    <!-- Main Map Container -->
+    <component :is="currentGameComponent" :selectedLanguage="selectedLanguage" />
 
-    <!-- Main Content -->
-    <div class="flex-1">
-      <div class="p-4 flex flex-row gap-4">
+    <!-- Floating Controls -->
+    <div class="fixed top-4 right-4 flex gap-2 z-10">
+      <!-- Game Mode Selector -->
+      <div
+          class="relative"
+          @mouseenter="isGameModeOpen = true"
+          @mouseleave="isGameModeOpen = false"
+      >
         <button
-            @click="isNavOpen = !isNavOpen"
-            class="w-fit h-fit mb-4 p-2 bg-white rounded-lg shadow-sm hover:bg-gray-50 transition-colors"
+            class="bg-white/90 backdrop-blur-sm rounded-lg px-4 py-2 shadow-lg flex items-center gap-2 hover:bg-white/95 transition-all duration-200 border border-sunset-100/20"
         >
+          <span class="text-sunset-gray font-medium">
+            {{ currentMode.charAt(0).toUpperCase() + currentMode.slice(1) }} Mode
+          </span>
           <svg
-              class="h-6 w-6 text-gray-600"
+              class="h-4 w-4 text-sunset-200 transform transition-transform duration-200"
+              :class="isGameModeOpen ? 'rotate-180' : ''"
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
@@ -46,13 +28,80 @@
                 stroke-linecap="round"
                 stroke-linejoin="round"
                 stroke-width="2"
-                d="M4 6h16M4 12h16M4 18h16"
+                d="M19 9l-7 7-7-7"
             />
           </svg>
         </button>
 
-        <div class="bg-white rounded-lg shadow-sm p-6 flex-1">
-          <component :is="currentGameComponent" :selectedLanguage="selectedLanguage" />
+        <!-- Dropdown Menu -->
+        <div
+            v-show="isGameModeOpen"
+            class="absolute right-0 w-48 bg-white/90 backdrop-blur-sm rounded-lg shadow-xl py-1 border border-sunset-100/20"
+        >
+          <button
+              v-for="mode in gameModes"
+              :key="mode"
+              @click="selectGameMode(mode)"
+              class="w-full text-left px-4 py-2 text-sunset-gray hover:bg-sunset-100/10 transition-colors"
+              :class="currentMode === mode ? 'bg-sunset-100/20 text-sunset-400 font-medium' : ''"
+          >
+            {{ mode.charAt(0).toUpperCase() + mode.slice(1) }} Mode
+          </button>
+        </div>
+      </div>
+
+      <!-- Language Selector -->
+      <div
+          class="relative"
+          @mouseenter="isLanguageOpen = true"
+          @mouseleave="isLanguageOpen = false"
+      >
+        <button
+            class="h-full bg-white/90 backdrop-blur-sm rounded-lg px-4 py-2 shadow-lg flex items-center gap-2 hover:bg-white/95 transition-all duration-200 border border-sunset-100/20"
+        >
+          <svg
+              class="h-5 w-5 text-sunset-200"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+          >
+            <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129"
+            />
+          </svg>
+          <svg
+              class="h-4 w-4 text-sunset-200 transform transition-transform duration-200"
+              :class="isLanguageOpen ? 'rotate-180' : ''"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+          >
+            <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M19 9l-7 7-7-7"
+            />
+          </svg>
+        </button>
+
+        <!-- Dropdown Menu -->
+        <div
+            v-show="isLanguageOpen"
+            class="absolute right-0 w-48 bg-white/90 backdrop-blur-sm rounded-lg shadow-xl py-1 max-h-96 overflow-y-auto border border-sunset-100/20"
+        >
+          <button
+              v-for="(label, code) in languages"
+              :key="code"
+              @click="selectedLanguage = code"
+              class="w-full text-left px-4 py-2 text-sunset-gray hover:bg-sunset-100/10 transition-colors"
+              :class="selectedLanguage === code ? 'bg-sunset-100/20 text-sunset-400 font-medium' : ''"
+          >
+            {{ label }}
+          </button>
         </div>
       </div>
     </div>
@@ -63,12 +112,14 @@
 import { ref, computed } from 'vue'
 import CountryClickGame from './components/CountryClickGame.vue'
 import CountryNameGame from './components/CountryNameGame.vue'
-import TrainingMode from "./components/TrainingMode.vue";
+import TrainingMode from "./components/TrainingMode.vue"
+import FindMode from "./components/FindMode.vue";
 
 const currentMode = ref('training')
-const gameModes = ['training', 'click', 'name']
-const isNavOpen = ref(false)
+const gameModes = ['training', 'find', 'click', 'name']
 const selectedLanguage = ref('NAME_DE')
+const isGameModeOpen = ref(false)
+const isLanguageOpen = ref(false)
 
 const languages = {
   NAME_AR: 'Arabic',
@@ -102,6 +153,7 @@ const languages = {
 const currentGameComponent = computed(() => {
   switch (currentMode.value) {
     case 'training': return TrainingMode
+    case 'find' : return FindMode
     case 'click': return CountryClickGame
     case 'name': return CountryNameGame
     default: return CountryClickGame
@@ -110,6 +162,35 @@ const currentGameComponent = computed(() => {
 
 const selectGameMode = (mode) => {
   currentMode.value = mode
-  isNavOpen.value = false
+  isGameModeOpen.value = false
 }
 </script>
+
+<style>
+.background-pattern {
+  background-color: #f4f4f4;
+  background-image: linear-gradient(to right, rgba(184, 184, 184, 0.1) 1px, transparent 1px),
+  linear-gradient(to bottom, rgba(184, 184, 184, 0.1) 1px, transparent 1px);
+  background-size: 40px 40px;
+  background-position: 0 0;
+  margin: 0;
+}
+
+/* Custom scrollbar for dropdowns */
+.overflow-y-auto::-webkit-scrollbar {
+  width: 6px;
+}
+
+.overflow-y-auto::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.overflow-y-auto::-webkit-scrollbar-thumb {
+  background-color: rgba(242, 146, 29, 0.3);
+  border-radius: 3px;
+}
+
+.overflow-y-auto::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(242, 146, 29, 0.5);
+}
+</style>

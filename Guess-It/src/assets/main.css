@@ -1,1 +1,9 @@
 @import "tailwindcss";
+
+@theme {
+    --color-sunset-100: #f2921d;
+    --color-sunset-200: #f27127;
+    --color-sunset-300: #d95323;
+    --color-sunset-400: #8c322a;
+    --color-sunset-gray: #2e3440;
+}

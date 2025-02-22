@@ -24,28 +24,35 @@
 import {ref, computed, onMounted, watch, nextTick} from 'vue'
 import { LMap, LGeoJson } from '@vue-leaflet/vue-leaflet'
 import 'leaflet/dist/leaflet.css'
+import L from 'leaflet'
 
 const props = defineProps(['selectedLanguage'])
 const emit = defineEmits(['country-click', 'country-hover'])
 
-const zoom = ref(2)
+const zoom = ref(4)
 const center = ref([20, 0])
 const map = ref(null)
 const geoJsonLayer = ref(null)
 const countriesData = ref({ type: 'FeatureCollection', features: [] })
 const temporaryColoredFeature = ref(null)
 
+const maxBounds = [
+  [-68, -182], // Southwest coordinates
+  [88, 182]    // Northeast coordinates
+]
+
 const mapOptions = {
   minZoom: 2,
-  maxZoom: 8,
+  maxZoom: 9,
   zoomControl: true,
-  dragging: true
+  dragging: true,
+  maxBounds: maxBounds,
 }
 
 const geoJsonOptions = computed(() => ({
   onEachFeature: (feature, layer) => {
     layer.setStyle({
-      fillColor: '#3388ff',
+      fillColor: '#8c322a',
       weight: 1,
       opacity: 1,
       color: 'white',
@@ -56,7 +63,7 @@ const geoJsonOptions = computed(() => ({
 
 const loadCountriesData = async () => {
   try {
-    const response = await fetch('/ne_10m_admin_0_countries_lakes.json')
+    const response = await fetch('/ne_10m_admin_0_countries_lakes_no_antarktika.json')
     const data = await response.json()
     countriesData.value = data
   } catch (error) {
@@ -69,7 +76,6 @@ onMounted(loadCountriesData)
 watch(() => props.selectedLanguage, loadCountriesData)
 
 const handleCountryClick = (e) => {
-  //console.log('Country clicked:', e.layer.feature.properties[props.selectedLanguage])
   const feature = e.layer.feature
   emit('country-click', feature, (isCorrect) => {
     const color = isCorrect ? '#42b983' : '#ff4444'
@@ -81,7 +87,7 @@ const handleCountryClick = (e) => {
     setTimeout(() => {
       if (temporaryColoredFeature.value !== feature) {
         e.layer.setStyle({
-          fillColor: '#3388ff',
+          fillColor: '#8c322a',
           fillOpacity: 0.7
         })
       }
@@ -143,7 +149,7 @@ const highlightCountry = (country, timeout = 0, highlightColor = '#42b983') => {
     if (timeout > 0) {
       setTimeout(() => {
         targetLayer.setStyle({
-          fillColor: '#3388ff',
+          fillColor: '#8c322a',
           weight: 1,
           opacity: 1,
           color: 'white',
@@ -159,14 +165,13 @@ defineExpose({ highlightCountry })
 
 <style scoped>
 .map-container {
-  height: 700px;
-  width: 100%;
+  height: 100vh;
+  width: 100vw;
   position: relative;
+  z-index: 1;
 }
 
-:deep(.l-map) {
-  height: 100%;
-  width: 100%;
-  z-index: 1;
+.leaflet-container {
+  background-color: transparent !important;
 }
 </style>
