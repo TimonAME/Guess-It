@@ -14,26 +14,26 @@
           @click="handleCountryClick"
           @mouseover="handleMouseOver"
           @mouseout="handleMouseOut"
+          ref="geoJsonLayer"
       />
     </l-map>
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch } from 'vue'
+import {ref, computed, onMounted, watch, nextTick} from 'vue'
 import { LMap, LGeoJson } from '@vue-leaflet/vue-leaflet'
 import 'leaflet/dist/leaflet.css'
 
 const props = defineProps(['selectedLanguage'])
-const emit = defineEmits(['country-click'])
+const emit = defineEmits(['country-click', 'country-hover'])
 
 const zoom = ref(2)
 const center = ref([20, 0])
 const map = ref(null)
+const geoJsonLayer = ref(null)
 const countriesData = ref({ type: 'FeatureCollection', features: [] })
-const hoveredFeature = ref(null)
 const temporaryColoredFeature = ref(null)
-const temporaryColor = ref(null)
 
 const mapOptions = {
   minZoom: 2,
@@ -54,16 +54,6 @@ const geoJsonOptions = computed(() => ({
   }
 }))
 
-const setTemporaryColor = (feature, color, duration) => {
-  temporaryColoredFeature.value = feature
-  temporaryColor.value = color
-
-  setTimeout(() => {
-    temporaryColoredFeature.value = null
-    temporaryColor.value = null
-  }, duration)
-}
-
 const loadCountriesData = async () => {
   try {
     const response = await fetch('/ne_10m_admin_0_countries_lakes.json')
@@ -75,14 +65,14 @@ const loadCountriesData = async () => {
 }
 
 onMounted(loadCountriesData)
+
 watch(() => props.selectedLanguage, loadCountriesData)
 
 const handleCountryClick = (e) => {
-  console.log('Country clicked:', e.layer.feature.properties[props.selectedLanguage])
+  //console.log('Country clicked:', e.layer.feature.properties[props.selectedLanguage])
   const feature = e.layer.feature
   emit('country-click', feature, (isCorrect) => {
     const color = isCorrect ? '#42b983' : '#ff4444'
-    console.log('Guess was:', isCorrect)
 
     e.layer.setStyle({
       fillColor: color,
@@ -105,6 +95,7 @@ const handleMouseOver = (e) => {
       weight: 3
     })
   }
+  emit('country-hover', e.layer.feature)
 }
 
 const handleMouseOut = (e) => {
@@ -115,12 +106,53 @@ const handleMouseOut = (e) => {
   }
 }
 
-const highlightCountry = (targetCountry) => {
-  console.log('Highlighting:', targetCountry.value.name)
+const highlightCountry = (country, timeout = 0, highlightColor = '#42b983') => {
+  if (!geoJsonLayer.value?.leafletObject) return
 
-  // TODO: Highlight the target country
+  const layers = geoJsonLayer.value.leafletObject.getLayers()
+
+  // If reset is true, reset this country to default style
+  /*
+  if (country.reset) {
+    layers.forEach(layer => {
+      layer.setStyle({
+        fillColor: '#3388ff',
+        weight: 1,
+        opacity: 1,
+        color: 'white',
+        fillOpacity: 0.7
+      })
+    })
+    return
+  }*/
+
+  // TODO: zoom to country
+
+  // Find and highlight the target country
+  const targetLayer = layers.find(layer =>
+      layer.feature.properties[props.selectedLanguage] === country.name
+  )
+
+  if (targetLayer) {
+    targetLayer.setStyle({
+      fillColor: highlightColor,  // Green color for found countries
+      weight: 2,
+      fillOpacity: 0.7
+    })
+
+    if (timeout > 0) {
+      setTimeout(() => {
+        targetLayer.setStyle({
+          fillColor: '#3388ff',
+          weight: 1,
+          opacity: 1,
+          color: 'white',
+          fillOpacity: 0.7
+        })
+      }, timeout)
+    }
+  }
 }
-
 
 defineExpose({ highlightCountry })
 </script>

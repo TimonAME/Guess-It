@@ -63,10 +63,10 @@
 import { ref, computed } from 'vue'
 import CountryClickGame from './components/CountryClickGame.vue'
 import CountryNameGame from './components/CountryNameGame.vue'
-import BorderPathGame from './components/BorderPathGame.vue'
+import TrainingMode from "./components/TrainingMode.vue";
 
-const currentMode = ref('click')
-const gameModes = ['click', 'name', 'path']
+const currentMode = ref('training')
+const gameModes = ['training', 'click', 'name']
 const isNavOpen = ref(false)
 const selectedLanguage = ref('NAME_DE')
 
@@ -101,9 +101,9 @@ const languages = {
 
 const currentGameComponent = computed(() => {
   switch (currentMode.value) {
+    case 'training': return TrainingMode
     case 'click': return CountryClickGame
     case 'name': return CountryNameGame
-    case 'path': return BorderPathGame
     default: return CountryClickGame
   }
 })
