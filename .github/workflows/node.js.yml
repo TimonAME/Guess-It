@@ -21,7 +21,7 @@ jobs:
 
     steps:
     - run: cd ..
-    - run: cd Guess-It
+    - run:  cd .\Guess-It\
     - uses: actions/checkout@v4
     - name: Use Node.js ${{ matrix.node-version }}
       uses: actions/setup-node@v4
