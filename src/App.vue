@@ -4,7 +4,7 @@
     <component :is="currentGameComponent" :selectedLanguage="selectedLanguage" />
 
     <!-- Floating Controls -->
-    <div class="fixed top-4 right-4 flex gap-2 z-10">
+    <div class="fixed top-4 right-4 flex sm:flex-row flex-col items-end gap-2 select-none z-10">
       <!-- Game Mode Selector -->
       <div
           class="relative"
@@ -14,11 +14,14 @@
         <button
             class="bg-white/90 backdrop-blur-sm rounded-lg px-4 py-2 shadow-lg flex items-center gap-2 hover:bg-white/95 transition-all duration-200 border border-sunset-100/20"
         >
-          <span class="text-sunset-gray font-medium">
+          <span class="hidden sm:block text-sunset-gray font-medium">
             {{ currentMode.charAt(0).toUpperCase() + currentMode.slice(1) }} Mode
           </span>
+          <span class="block sm:hidden text-sunset-gray font-medium">
+            Mode
+          </span>
           <svg
-              class="h-4 w-4 text-sunset-200 transform transition-transform duration-200"
+              class="hidden sm:block h-4 w-4 text-sunset-200 transform transition-transform duration-200"
               :class="isGameModeOpen ? 'rotate-180' : ''"
               fill="none"
               viewBox="0 0 24 24"
@@ -36,7 +39,7 @@
         <!-- Dropdown Menu -->
         <div
             v-show="isGameModeOpen"
-            class="absolute right-0 w-48 bg-white/90 backdrop-blur-sm rounded-lg shadow-xl py-1 border border-sunset-100/20"
+            class="absolute right-0 w-48 bg-white/90 backdrop-blur-sm rounded-lg shadow-xl py-1 border border-sunset-100/20 z-20"
         >
           <button
               v-for="mode in gameModes"
@@ -73,7 +76,7 @@
             />
           </svg>
           <svg
-              class="h-4 w-4 text-sunset-200 transform transition-transform duration-200"
+              class="hidden sm:block h-4 w-4 text-sunset-200 transform transition-transform duration-200"
               :class="isLanguageOpen ? 'rotate-180' : ''"
               fill="none"
               viewBox="0 0 24 24"
@@ -91,7 +94,7 @@
         <!-- Dropdown Menu -->
         <div
             v-show="isLanguageOpen"
-            class="absolute right-0 w-48 bg-white/90 backdrop-blur-sm rounded-lg shadow-xl py-1 max-h-96 overflow-y-auto border border-sunset-100/20"
+            class="absolute right-0 w-48 bg-white/90 backdrop-blur-sm rounded-lg shadow-xl py-1 max-h-96 overflow-y-auto border border-sunset-100/20 z-20"
         >
           <button
               v-for="(label, code) in languages"
@@ -116,7 +119,7 @@ import TrainingMode from "./components/TrainingMode.vue"
 import FindMode from "./components/FindMode.vue";
 
 const currentMode = ref('training')
-const gameModes = ['training', 'find', 'click', 'name']
+const gameModes = ['training', 'find']//, 'click', 'name'
 const selectedLanguage = ref('NAME_DE')
 const isGameModeOpen = ref(false)
 const isLanguageOpen = ref(false)

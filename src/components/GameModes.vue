@@ -1,5 +1,5 @@
 <template>
-  <div class="fixed bottom-4 left-4 z-10">
+  <div class="z-10">
     <div
         class="relative game-modes-container"
         @mouseenter="isExpanded = true"

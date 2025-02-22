@@ -1,7 +1,7 @@
 <template>
   <div class="fixed top-4 left-0 right-0 flex justify-center items-center z-10">
     <div class="bg-white/90 backdrop-blur-sm rounded-lg px-6 py-3 shadow-lg border border-sunset-100/20 text-center">
-      <h2 class="text-center justify-center text-2xl font-semibold text-sunset-gray">
+      <h2 class="text-center justify-center text-2xl font-semibold text-sunset-gray max-w-[40vw]">
         {{ hoveredCountry || 'Hover over a country' }}
       </h2>
     </div>

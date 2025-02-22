@@ -1,7 +1,7 @@
 <template>
   <div class="fixed top-4 left-0 right-0 flex justify-center items-center z-10">
     <div class="bg-white/90 backdrop-blur-sm rounded-lg px-6 py-3 shadow-lg border border-sunset-100/20 text-center">
-      <h2 class="text-center justify-center text-2xl font-semibold text-sunset-gray">
+      <h2 class="text-center justify-center text-2xl font-semibold text-sunset-gray max-w-[40vw]">
         {{ targetCountry?.name || 'Loading...' }}
       </h2>
     </div>
@@ -13,7 +13,11 @@
       :selected-language="selectedLanguage"
   />
 
-  <div class="fixed bottom-4 left-0 right-0 flex justify-center items-center gap-4 z-10">
+  <div class="fixed bottom-4 left-0 right-0 flex justify-between items-center flex-wrap gap-4 px-4 z-10">
+    <game-modes
+        v-model:gameMode="currentGameMode"
+        @update:gameMode="handleGameModeChange"
+    />
     <div class="bg-white/90 backdrop-blur-sm rounded-lg px-2 py-2 shadow-lg border border-sunset-100/20 flex items-center gap-4">
       <button @click="toggleHints"
               class="px-4 py-2 bg-blue-100 text-blue-700 rounded-md hover:bg-blue-200 transition-colors">
@@ -34,10 +38,7 @@
     </div>
   </div>
 
-  <game-modes
-      v-model:gameMode="currentGameMode"
-      @update:gameMode="handleGameModeChange"
-  />
+
 </template>
 
 <script setup>
