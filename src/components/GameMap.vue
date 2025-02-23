@@ -22,7 +22,7 @@
 
 <script setup>
 import {ref, computed, onMounted, watch, nextTick} from 'vue'
-import { LMap, LGeoJson } from '@vue-leaflet/vue-leaflet'
+import {LMap, LGeoJson} from '@vue-leaflet/vue-leaflet'
 import 'leaflet/dist/leaflet.css'
 import L from 'leaflet'
 
@@ -33,7 +33,7 @@ const zoom = ref(4)
 const center = ref([20, 0])
 const map = ref(null)
 const geoJsonLayer = ref(null)
-const countriesData = ref({ type: 'FeatureCollection', features: [] })
+const countriesData = ref({type: 'FeatureCollection', features: []})
 const temporaryColoredFeature = ref(null)
 
 const maxBounds = [
@@ -112,27 +112,26 @@ const handleMouseOut = (e) => {
   }
 }
 
+const zoomToCountry = (layer) => {
+  if (!map.value?.leafletObject) return;
+
+  try {
+    const bounds = layer.getBounds();
+    map.value.leafletObject.fitBounds(bounds, {
+      padding: [50, 50],
+      maxZoom: 8,
+      animate: true,
+      duration: 1
+    });
+  } catch (error) {
+    console.error('Error zooming to country:', error);
+  }
+}
+
 const highlightCountry = (country, timeout = 0, highlightColor = '#42b983') => {
   if (!geoJsonLayer.value?.leafletObject) return
 
   const layers = geoJsonLayer.value.leafletObject.getLayers()
-
-  // If reset is true, reset this country to default style
-  /*
-  if (country.reset) {
-    layers.forEach(layer => {
-      layer.setStyle({
-        fillColor: '#3388ff',
-        weight: 1,
-        opacity: 1,
-        color: 'white',
-        fillOpacity: 0.7
-      })
-    })
-    return
-  }*/
-
-  // TODO: zoom to country
 
   // Find and highlight the target country
   const targetLayer = layers.find(layer =>
@@ -140,11 +139,15 @@ const highlightCountry = (country, timeout = 0, highlightColor = '#42b983') => {
   )
 
   if (targetLayer) {
+    // Set the style
     targetLayer.setStyle({
       fillColor: highlightColor,  // Green color for found countries
       weight: 2,
       fillOpacity: 0.7
     })
+
+    // Zoom to the country
+    zoomToCountry(targetLayer);
 
     if (timeout > 0) {
       setTimeout(() => {
@@ -160,7 +163,7 @@ const highlightCountry = (country, timeout = 0, highlightColor = '#42b983') => {
   }
 }
 
-defineExpose({ highlightCountry })
+defineExpose({highlightCountry})
 </script>
 
 <style scoped>
