@@ -113,7 +113,8 @@ const handleMouseOut = (e) => {
 }
 
 const zoomToCountry = (layer) => {
-  if (!map.value?.leafletObject) return;
+  // TODO: fix - only is true after user zoomes once, before that it is false
+  if (!map.value) return;
 
   try {
     const bounds = layer.getBounds();

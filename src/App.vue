@@ -118,9 +118,11 @@ import CountryNameGame from './components/CountryNameGame.vue'
 import TrainingMode from "./components/TrainingMode.vue"
 import FindMode from "./components/FindMode.vue";
 import router from "@/router/index.js";
+import {useRoute} from "vue-router";
 
-const currentMode = ref('training')
-const gameModes = ['training', 'find']//, 'click', 'name'
+const route = useRoute()
+const currentMode = computed(() => route.path.substring(1) || 'training')
+const gameModes = ['training', 'find'] //, 'click', 'name'
 const selectedLanguage = ref('NAME_DE')
 const isGameModeOpen = ref(false)
 const isLanguageOpen = ref(false)
