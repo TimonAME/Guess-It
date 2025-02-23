@@ -2,7 +2,7 @@
   <div class="fixed sm:top-4 bottom-4 left-0 right-0 flex justify-center items-center z-10">
     <div class="bg-white/90 backdrop-blur-sm rounded-lg px-6 py-3 shadow-lg border border-sunset-100/20 text-center">
       <h2 class="text-center justify-center text-2xl font-semibold text-sunset-gray">
-        {{ hoveredCountry || 'Hover over a country' }}
+        {{ hoveredCountry || 'Hover / Click a country' }}
       </h2>
     </div>
   </div>
@@ -16,7 +16,7 @@
 
   <!-- Clicked Country Info -->
   <div v-if="clickedCountryInfo"
-       class="fixed bottom-4 right-4 bg-white/90 backdrop-blur-sm rounded-lg p-4 shadow-lg border border-sunset-100/20 z-10">
+       class="fixed sm:bottom-4 sm:right-4 top-4 left-4 bg-white/90 backdrop-blur-sm rounded-lg p-4 shadow-lg border border-sunset-100/20 z-10">
     <div class="flex items-start gap-4">
       <div>
         <div class="text-lg font-medium text-sunset-gray mb-2">Country Information</div>

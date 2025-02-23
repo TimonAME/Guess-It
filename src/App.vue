@@ -45,7 +45,7 @@
           <button
               v-for="mode in gameModes"
               :key="mode"
-              @click="selectGameMode(mode)"
+              @click.stop="selectGameMode(mode)"
               class="w-full text-left px-4 py-2 text-sunset-gray hover:bg-sunset-100/10 transition-colors"
               :class="currentMode === mode ? 'bg-sunset-100/20 text-sunset-400 font-medium' : ''"
           >
@@ -101,7 +101,7 @@
           <button
               v-for="(label, code) in languages"
               :key="code"
-              @click="selectedLanguage = code"
+              @click.stop="selectedLanguage = code; isLanguageOpen = false"
               class="w-full text-left px-4 py-2 text-sunset-gray hover:bg-sunset-100/10 transition-colors"
               :class="selectedLanguage === code ? 'bg-sunset-100/20 text-sunset-400 font-medium' : ''"
           >

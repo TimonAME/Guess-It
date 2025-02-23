@@ -22,7 +22,7 @@
           <div
               v-for="(label, value) in gameModeOptions"
               :key="value"
-              @click="selectGameMode(value)"
+              @click.stop="selectGameMode(value)"
               class="px-3 py-2 rounded-md cursor-pointer text-sunset-gray transition-colors"
               :class="selectedGameMode === value ? 'bg-sunset-100/20 text-sunset-400 font-medium' : 'hover:bg-sunset-100/10'"
           >
@@ -59,9 +59,9 @@ const gameModeOptions = {
 }
 
 const selectGameMode = (value) => {
+  isExpanded.value = false
   selectedGameMode.value = value
   emit('update:gameMode', value)
-  isExpanded.value = false
 }
 </script>
 
