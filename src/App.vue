@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen relative background-pattern">
+  <div class="min-h-screen relative background-pattern select-none">
     <!-- Main Map Container -->
     <router-view :selectedLanguage="selectedLanguage" />
 

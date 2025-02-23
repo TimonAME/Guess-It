@@ -78,20 +78,20 @@ watch(() => props.selectedLanguage, loadCountriesData)
 const handleCountryClick = (e) => {
   const feature = e.layer.feature
   emit('country-click', feature, (isCorrect) => {
-    const color = isCorrect ? '#42b983' : '#ff4444'
-
-    e.layer.setStyle({
-      fillColor: color,
-      fillOpacity: 0.7
-    })
-    setTimeout(() => {
-      if (temporaryColoredFeature.value !== feature) {
-        e.layer.setStyle({
-          fillColor: '#8c322a',
-          fillOpacity: 0.7
-        })
-      }
-    }, 1000)
+    if (!isCorrect) {
+      e.layer.setStyle({
+        fillColor: '#ff4444',
+        fillOpacity: 0.7
+      })
+      setTimeout(() => {
+        if (temporaryColoredFeature.value !== feature) {
+          e.layer.setStyle({
+            fillColor: '#8c322a',
+            fillOpacity: 0.7
+          })
+        }
+      }, 1000)
+    }
   })
 }
 
@@ -129,7 +129,22 @@ const zoomToCountry = (layer) => {
   }
 }
 
-const highlightCountry = (country, timeout = 0, highlightColor = '#42b983') => {
+const resetMapColors = () => {
+  if (!geoJsonLayer.value?.leafletObject) return
+
+  const layers = geoJsonLayer.value.leafletObject.getLayers()
+  layers.forEach(layer => {
+    layer.setStyle({
+      fillColor: '#8c322a',
+      weight: 1,
+      opacity: 1,
+      color: 'white',
+      fillOpacity: 0.7
+    })
+  })
+}
+
+const highlightCountry = (country, timeout = 0, highlightColor = '#42b983', zoom = false) => {
   if (!geoJsonLayer.value?.leafletObject) return
 
   const layers = geoJsonLayer.value.leafletObject.getLayers()
@@ -142,15 +157,17 @@ const highlightCountry = (country, timeout = 0, highlightColor = '#42b983') => {
   if (targetLayer) {
     // Set the style
     targetLayer.setStyle({
-      fillColor: highlightColor,  // Green color for found countries
+      fillColor: highlightColor,
       weight: 2,
       fillOpacity: 0.7
     })
 
-    // Zoom to the country
-    zoomToCountry(targetLayer);
+    // Zoom to the country if specified
+    if (zoom) zoomToCountry(targetLayer)
 
+    // Only reset the color if a timeout is specified
     if (timeout > 0) {
+      console.log("color reset")
       setTimeout(() => {
         targetLayer.setStyle({
           fillColor: '#8c322a',
@@ -164,7 +181,7 @@ const highlightCountry = (country, timeout = 0, highlightColor = '#42b983') => {
   }
 }
 
-defineExpose({highlightCountry})
+defineExpose({ highlightCountry, resetMapColors })
 </script>
 
 <style scoped>
