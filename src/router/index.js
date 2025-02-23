@@ -5,7 +5,7 @@ import CountryClickGame from '@/components/CountryClickGame.vue'
 import CountryNameGame from '@/components/CountryNameGame.vue'
 
 const routes = [
-    { path: '/', redirect: '/training' },
+    { path: '/', component: TrainingMode },
     { path: '/training', component: TrainingMode },
     { path: '/find', component: FindMode }
 ]
