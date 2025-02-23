@@ -1,10 +1,35 @@
 <template>
-  <div class="fixed top-4 left-0 right-0 flex justify-center items-center z-10">
+  <div class="fixed top-4 left-0 right-0 flex flex-col gap-2 justify-center items-center z-10">
+    <div class="bg-white/90 backdrop-blur-sm text-sm rounded-lg px-1 py-1 shadow-lg border border-sunset-100/20 flex items-center gap-4">
+      <button @click="toggleHints"
+              class="px-4 py-1 bg-blue-100 text-blue-700 rounded-md hover:bg-blue-200 transition-colors">
+        {{ showHints ? 'Hide Hints' : 'Hints' }}
+      </button>
+      <div v-if="showHints" class="text-sunset-gray">
+        <span class="mr-4">Continent: <strong>{{ hints?.continent }}</strong></span>
+        <span>Population: <strong>{{ formatNumber(hints?.population) }}</strong></span>
+      </div>
+      <button @click="generateNewTarget"
+              class="px-4 py-1 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition-colors">
+        Skip
+      </button>
+      <button @click="showCountry"
+              class="px-4 py-1 bg-red-100 text-red-700 rounded-md hover:bg-red-200 transition-colors">
+        Show
+      </button>
+    </div>
+
     <div class="bg-white/90 backdrop-blur-sm rounded-lg px-6 py-3 shadow-lg border border-sunset-100/20 text-center">
       <h2 class="text-center justify-center text-2xl font-semibold text-sunset-gray max-w-[40vw]">
         {{ targetCountry?.name || 'Loading...' }}
       </h2>
     </div>
+  </div>
+  <div class="fixed top-4 left-4 z-10">
+    <game-modes
+        v-model:gameMode="currentGameMode"
+        @update:gameMode="handleGameModeChange"
+    />
   </div>
 
   <game-map
@@ -12,33 +37,6 @@
       @country-click="handleCountryClick"
       :selected-language="selectedLanguage"
   />
-
-  <div class="fixed bottom-4 left-0 right-0 flex justify-between items-center flex-wrap gap-4 px-4 z-10">
-    <game-modes
-        v-model:gameMode="currentGameMode"
-        @update:gameMode="handleGameModeChange"
-    />
-    <div class="bg-white/90 backdrop-blur-sm rounded-lg px-2 py-2 shadow-lg border border-sunset-100/20 flex items-center gap-4">
-      <button @click="toggleHints"
-              class="px-4 py-2 bg-blue-100 text-blue-700 rounded-md hover:bg-blue-200 transition-colors">
-        {{ showHints ? 'Hide Hints' : 'Hints' }}
-      </button>
-      <div v-if="showHints" class="text-sunset-gray">
-        <span class="mr-4">Continent: {{ hints?.continent }}</span>
-        <span>Population: {{ formatNumber(hints?.population) }}</span>
-      </div>
-      <button @click="generateNewTarget"
-              class="px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition-colors">
-        Skip
-      </button>
-      <button @click="showCountry"
-              class="px-4 py-2 bg-red-100 text-red-700 rounded-md hover:bg-red-200 transition-colors">
-        Show
-      </button>
-    </div>
-  </div>
-
-
 </template>
 
 <script setup>

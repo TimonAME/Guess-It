@@ -15,7 +15,7 @@
       <!-- Expandable Options -->
       <div
           v-show="isExpanded"
-          class="absolute bottom-full left-0 w-64 bg-white/90 backdrop-blur-sm rounded-lg shadow-lg border border-sunset-100/20 max-h-[80vh] overflow-y-auto"
+          class="absolute left-0 w-64 bg-white/90 backdrop-blur-sm rounded-lg shadow-lg border border-sunset-100/20 max-h-[80vh] overflow-y-auto"
       >
         <div class="p-2 space-y-1">
           <div
