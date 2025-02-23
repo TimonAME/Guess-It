@@ -204,12 +204,16 @@ const loadCountries = async () => {
 }
 
 const handleGameModeChange = () => {
+  handleRestart()
+
   const filterStrategy = filterStrategies[currentGameMode.value] || filterStrategies.all
   const filteredCountries = filterStrategy(countries.value)
 
   gameStats.value = {
     totalCountries: filteredCountries.length,
     foundCountries: 0,
+    attempts: 0,
+    correctAttempts: 0,
     skippedAttempts: 0,
     remainingCountries: filteredCountries,
     foundList: []

@@ -43,7 +43,7 @@ const maxBounds = [
 
 const mapOptions = {
   minZoom: 2,
-  maxZoom: 9,
+  maxZoom: 10,
   zoomControl: false,
   dragging: true,
   maxBounds: maxBounds,
