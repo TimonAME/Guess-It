@@ -1,7 +1,7 @@
 <template>
   <div class="min-h-screen relative background-pattern">
     <!-- Main Map Container -->
-    <component :is="currentGameComponent" :selectedLanguage="selectedLanguage" />
+    <router-view :selectedLanguage="selectedLanguage" />
 
     <!-- Floating Controls -->
     <div class="fixed top-4 right-4 flex sm:flex-row flex-col items-end gap-2 select-none z-10">
@@ -117,6 +117,7 @@ import CountryClickGame from './components/CountryClickGame.vue'
 import CountryNameGame from './components/CountryNameGame.vue'
 import TrainingMode from "./components/TrainingMode.vue"
 import FindMode from "./components/FindMode.vue";
+import router from "@/router/index.js";
 
 const currentMode = ref('training')
 const gameModes = ['training', 'find']//, 'click', 'name'
@@ -153,18 +154,9 @@ const languages = {
   NAME_ZHT: 'Chinese (Traditional)'
 }
 
-const currentGameComponent = computed(() => {
-  switch (currentMode.value) {
-    case 'training': return TrainingMode
-    case 'find' : return FindMode
-    case 'click': return CountryClickGame
-    case 'name': return CountryNameGame
-    default: return CountryClickGame
-  }
-})
-
 const selectGameMode = (mode) => {
-  currentMode.value = mode
+  router.push(`/${mode}`)
+  currentMode.value = mode;
   isGameModeOpen.value = false
 }
 </script>
