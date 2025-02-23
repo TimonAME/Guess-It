@@ -4,12 +4,13 @@
     <router-view :selectedLanguage="selectedLanguage" />
 
     <!-- Floating Controls -->
-    <div class="fixed top-4 right-4 flex sm:flex-row flex-col items-end sm:items-center gap-2 select-none z-10">
+    <div class="fixed top-4 h-fit right-4 flex sm:flex-row flex-col items-end sm:items-center gap-2 select-none z-10">
       <!-- Game Mode Selector -->
       <div
           class="relative"
           @mouseenter="isGameModeOpen = true"
           @mouseleave="isGameModeOpen = false"
+          @click="isGameModeOpen = !isGameModeOpen"
       >
         <button
             class="bg-white/90 backdrop-blur-sm rounded-lg px-4 py-2 shadow-lg flex items-center gap-2 hover:bg-white/95 transition-all duration-200 border border-sunset-100/20"
@@ -58,6 +59,7 @@
           class="relative"
           @mouseenter="isLanguageOpen = true"
           @mouseleave="isLanguageOpen = false"
+          @click="isLanguageOpen = !isLanguageOpen"
       >
         <button
             class="h-full bg-white/90 backdrop-blur-sm rounded-lg px-4 py-2 shadow-lg flex items-center gap-2 hover:bg-white/95 transition-all duration-200 border border-sunset-100/20"

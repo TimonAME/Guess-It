@@ -1,6 +1,6 @@
 <template>
-  <div class="fixed top-4 w-fit mx-auto left-0 right-0 flex flex-col gap-2 items-center z-10">
-    <div class="bg-white/90 backdrop-blur-sm text-sm rounded-lg px-4 py-3 shadow-lg border border-sunset-100/20">
+  <div class="fixed sm:top-4 bottom-4 w-fit mx-auto left-0 right-0 flex flex-col gap-2 items-center z-10">
+    <div class="sm:order-1 order-3 bg-white/90 backdrop-blur-sm text-sm rounded-lg px-4 py-3 shadow-lg border border-sunset-100/20">
       <div class="flex items-center gap-4 justify-between mb-3">
         <button @click="toggleHints"
                 class="px-4 py-1 bg-blue-100 text-blue-700 rounded-md hover:bg-blue-200 transition-colors">
@@ -37,14 +37,14 @@
       </div>
     </div>
 
-    <div v-if="gameStats.foundCountries !== gameStats.totalCountries || gameStats.totalCountries === 0" class="bg-white/90 backdrop-blur-sm rounded-lg px-6 py-3 shadow-lg border border-sunset-100/20 text-center">
-      <h2 class="text-center justify-center text-2xl font-semibold text-sunset-gray max-w-[40vw]">
+    <div v-if="gameStats.foundCountries !== gameStats.totalCountries || gameStats.totalCountries === 0" class="sm:order-2 order-2 bg-white/90 backdrop-blur-sm rounded-lg px-6 py-3 shadow-lg border border-sunset-100/20 text-center">
+      <h2 class="text-center justify-center text-2xl font-semibold text-sunset-gray">
         {{ targetCountry?.name || 'Loading...' }}
       </h2>
     </div>
 
     <div v-if="gameStats.foundCountries === gameStats.totalCountries && gameStats.totalCountries !== 0"
-         class="bg-yellow-50 text-yellow-700 px-4 py-2 rounded-lg flex items-center gap-2">
+         class="sm:order-3 order-1 bg-yellow-50 text-yellow-700 px-4 py-2 rounded-lg flex items-center gap-2">
       <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
         <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
       </svg>
@@ -52,7 +52,7 @@
     </div>
   </div>
 
-  <div class="fixed top-4 left-4 z-10">
+  <div class="fixed top-4 left-4 h-fit z-10">
     <game-modes
         v-model:gameMode="currentGameMode"
         @update:gameMode="handleGameModeChange"

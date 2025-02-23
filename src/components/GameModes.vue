@@ -4,6 +4,7 @@
         class="relative game-modes-container"
         @mouseenter="isExpanded = true"
         @mouseleave="isExpanded = false"
+        @click="isExpanded = !isExpanded"
     >
       <!-- Current Mode Display -->
       <div class="bg-white/90 backdrop-blur-sm rounded-lg px-4 py-2 shadow-lg border border-sunset-100/20 cursor-pointer">
@@ -15,7 +16,7 @@
       <!-- Expandable Options -->
       <div
           v-show="isExpanded"
-          class="absolute left-0 w-64 bg-white/90 backdrop-blur-sm rounded-lg shadow-lg border border-sunset-100/20 max-h-[80vh] overflow-y-auto"
+          class="absolute top-full left-0 w-64 bg-white/90 backdrop-blur-sm rounded-lg shadow-lg border border-sunset-100/20 max-h-[80vh] overflow-y-auto"
       >
         <div class="p-2 space-y-1">
           <div
