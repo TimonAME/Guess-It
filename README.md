@@ -14,3 +14,7 @@
   - Goal is to type the name of all countries of the list
   - Countries get highlighted after typing their name
 - ConnectIt (User has to connect two countries by border)
+
+
+# Credits
+Map from https://www.naturalearthdata.com/
