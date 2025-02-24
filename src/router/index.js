@@ -3,11 +3,13 @@ import TrainingMode from '@/components/TrainingMode.vue'
 import FindMode from '@/components/FindMode.vue'
 import CountryClickGame from '@/components/old/CountryClickGame.vue'
 import CountryNameGame from '@/components/old/CountryNameGame.vue'
+import NameMode from "@/components/NameMode.vue";
 
 const routes = [
     { path: '/', component: FindMode },
     { path: '/training', component: TrainingMode },
-    { path: '/find', component: FindMode }
+    { path: '/find', component: FindMode },
+    { path: '/name', component: NameMode }
 ]
 
 const router = createRouter({
