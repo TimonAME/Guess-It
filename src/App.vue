@@ -124,7 +124,7 @@ import {useRoute} from "vue-router";
 
 const route = useRoute()
 const currentMode = computed(() => route.path.substring(1) || 'training')
-const gameModes = ['training', 'find', 'name']
+const gameModes = ['training', 'find', 'name', 'travel']
 const selectedLanguage = ref('NAME_DE')
 const isGameModeOpen = ref(false)
 const isLanguageOpen = ref(false)
