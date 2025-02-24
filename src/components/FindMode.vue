@@ -1,5 +1,5 @@
 <template>
-  <div class="fixed sm:top-4 bottom-4 w-fit mx-auto left-0 right-0 flex flex-col gap-2 items-center z-10">
+  <div class="fixed sm:top-4 bottom-4 w-fit h-fit mx-auto left-0 right-0 flex flex-col gap-2 items-center z-10">
     <div class="sm:order-1 order-3 bg-white/90 backdrop-blur-sm text-sm rounded-lg px-4 py-3 shadow-lg border border-sunset-100/20">
       <div class="flex items-center gap-4 justify-between mb-3">
         <button @click="toggleHints"
