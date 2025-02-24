@@ -79,7 +79,7 @@
 
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue'
-import GameMap from './GameMap.vue'
+import GameMap from '../GameMap.vue'
 
 const props = defineProps({
   selectedLanguage: {

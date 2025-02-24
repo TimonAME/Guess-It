@@ -115,8 +115,8 @@
 
 <script setup>
 import { ref, computed } from 'vue'
-import CountryClickGame from './components/CountryClickGame.vue'
-import CountryNameGame from './components/CountryNameGame.vue'
+import CountryClickGame from './components/old/CountryClickGame.vue'
+import CountryNameGame from './components/old/CountryNameGame.vue'
 import TrainingMode from "./components/TrainingMode.vue"
 import FindMode from "./components/FindMode.vue";
 import router from "@/router/index.js";

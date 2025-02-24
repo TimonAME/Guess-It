@@ -14,7 +14,7 @@
 <script>
 import { ref, computed } from 'vue'
 import { useStore } from 'vuex'
-import GameMap from './GameMap.vue'
+import GameMap from '../GameMap.vue'
 
 export default {
   name: 'BorderPathGame',

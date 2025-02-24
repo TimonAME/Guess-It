@@ -33,8 +33,8 @@
 <script setup>
 import {ref, computed, onMounted, watch} from 'vue'
 import {useStore} from 'vuex'
-import GameMap from './GameMap.vue'
-import GameModes from './GameModes.vue'
+import GameMap from '../GameMap.vue'
+import GameModes from '../GameModes.vue'
 
 const props = defineProps(['selectedLanguage'])
 
