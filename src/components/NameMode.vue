@@ -103,7 +103,7 @@ const checkCountry = () => {
         name: foundCountry.properties[props.selectedLanguage],
         id: foundCountry.id
       }
-      gameMap.value.highlightCountry(countryData, 0, '#42b983', true)
+      gameMap.value.highlightCountry(countryData, 0, '#42b983')
     }
   }
 
