@@ -18,7 +18,7 @@
 
   <!-- Clicked Country Info -->
   <div v-if="clickedCountryInfo"
-       class="fixed bottom-4 left-4 bg-white/90 backdrop-blur-sm rounded-lg p-4 shadow-lg border border-sunset-100/20 z-10">
+       class="fixed bottom-4 left-4 bg-white/90 backdrop-blur-sm rounded-lg p-4 shadow-lg border border-sunset-100/20 select-text z-10">
     <div class="flex items-start gap-4">
       <div>
         <div class="text-lg font-medium text-sunset-gray mb-2">Country Information</div>
