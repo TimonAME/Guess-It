@@ -37,8 +37,8 @@ const countriesData = ref({type: 'FeatureCollection', features: []})
 const temporaryColoredFeature = ref(null)
 
 const maxBounds = [
-  [-68, -182], // Southwest coordinates
-  [88, 182]    // Northeast coordinates
+  [-70, -300], // Southwest coordinates
+  [180, 300]    // Northeast coordinates
 ]
 
 const mapOptions = {
