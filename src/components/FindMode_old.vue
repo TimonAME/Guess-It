@@ -37,10 +37,9 @@
       </div>
     </div>
 
-    <div v-if="gameStats.foundCountries !== gameStats.totalCountries || gameStats.totalCountries === 0"
-         class="sm:order-2 order-2 bg-white/90 backdrop-blur-sm rounded-lg px-6 py-3 shadow-lg border border-sunset-100/20 text-center">
+    <div v-if="gameStats.foundCountries !== gameStats.totalCountries || gameStats.totalCountries === 0" class="sm:order-2 order-2 bg-white/90 backdrop-blur-sm rounded-lg px-6 py-3 shadow-lg border border-sunset-100/20 text-center">
       <h2 class="text-center justify-center text-2xl font-semibold text-sunset-gray">
-        {{ targetCountry?.localizedName || 'Loading...' }}
+        {{ targetCountry?.name || 'Loading...' }}
       </h2>
     </div>
 
@@ -53,51 +52,11 @@
     </div>
   </div>
 
-  <!-- Game Mode Selector -->
   <div class="fixed top-4 left-4 h-fit z-10">
-    <div
-        class="relative"
-        @mouseenter="isGameModesOpen = true"
-        @mouseleave="isGameModesOpen = false"
-        @click="isGameModesOpen = !isGameModesOpen"
-    >
-      <button
-          class="h-full bg-white/90 backdrop-blur-sm rounded-lg px-4 py-2 shadow-lg flex items-center gap-2 hover:bg-white/95 transition-all duration-200 border border-sunset-100/20"
-      >
-        <span class="text-sunset-gray font-medium">{{ currentGameMode?.name || 'Select Mode' }}</span>
-        <svg
-            class="hidden sm:block h-4 w-4 text-sunset-200 transform transition-transform duration-200"
-            :class="isGameModesOpen ? 'rotate-180' : ''"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-        >
-          <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M19 9l-7 7-7-7"
-          />
-        </svg>
-      </button>
-
-      <div
-          v-show="isGameModesOpen"
-          class="absolute top-full left-0 w-64 bg-white/90 backdrop-blur-sm rounded-lg shadow-xl max-h-96 overflow-y-auto border border-sunset-100/20"
-      >
-        <div class="py-2 space-y-1">
-          <div v-for="(mode, key) in gameModes"
-               :key="key"
-               @click.stop="selectGameMode(key)"
-               class="w-full text-left px-4 py-2 text-sunset-gray hover:bg-sunset-100/10 transition-colors"
-               :class="currentGameMode?.name === mode.name ? 'bg-sunset-100/20 text-sunset-400 font-medium' : ''"
-          >
-            <div class="font-medium">{{ mode.name }}</div>
-            <div class="text-sm opacity-80">{{ mode.description }}</div>
-          </div>
-        </div>
-      </div>
-    </div>
+    <game-modes
+        v-model:gameMode="currentGameMode"
+        @update:gameMode="handleGameModeChange"
+    />
   </div>
 
   <game-map
@@ -108,19 +67,17 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch } from 'vue'
+import {ref, computed, onMounted, watch} from 'vue'
 import GameMap from './GameMap.vue'
-import gameModeData from '@/assets/gameModes.json'
+import GameModes from './GameModes.vue'
 
 const props = defineProps(['selectedLanguage'])
 const gameMap = ref(null)
 const targetCountry = ref(null)
+const currentGameMode = ref('all')
 const showHints = ref(false)
 const hints = ref(null)
-const isGameModesOpen = ref(false)
 const countries = ref([])
-const gameModes = ref(gameModeData)
-const currentGameMode = ref(null)
 
 const gameStats = ref({
   totalCountries: 0,
@@ -138,15 +95,12 @@ const calculateAccuracy = () => {
 
 const handleCountryClick = (feature, callback) => {
   const isAlreadyFound = gameStats.value.foundList.some(
-      country => country.properties.ADMIN === feature.properties.ADMIN
+      country => country.properties[props.selectedLanguage] === feature.properties[props.selectedLanguage]
   )
-
   if (isAlreadyFound) return
 
   gameStats.value.attempts++
-  // Compare using ADMIN (English name) for validation
-  const isCorrect = feature.properties.ADMIN === targetCountry.value?.adminName
-
+  const isCorrect = feature.properties[props.selectedLanguage] === targetCountry.value?.name
   if (isCorrect) {
     gameStats.value.correctAttempts++
     handleCorrectGuess(feature)
@@ -156,30 +110,24 @@ const handleCountryClick = (feature, callback) => {
 
 const handleCorrectGuess = (feature = null) => {
   const foundCountry = gameStats.value.remainingCountries.find(
-      c => c.properties.ADMIN === targetCountry.value.adminName
+      c => c.properties[props.selectedLanguage] === targetCountry.value.name
   )
 
   gameStats.value.foundCountries++
   gameStats.value.remainingCountries = gameStats.value.remainingCountries.filter(
-      c => c.properties.ADMIN !== targetCountry.value.adminName
+      c => c.properties[props.selectedLanguage] !== targetCountry.value.name
   )
   gameStats.value.foundList.push(foundCountry)
 
+  // Keep the country highlighted
   if (feature && gameMap.value) {
-    gameMap.value.highlightCountry({
-      name: targetCountry.value.localizedName
-    }, 0, '#42b983')
+    gameMap.value.highlightCountry(targetCountry.value, 0, '#42b983')
   }
 
+  // Wait a bit before showing next country
   setTimeout(() => {
     generateNewTarget()
   }, 100)
-}
-
-const selectGameMode = (modeKey) => {
-  currentGameMode.value = gameModes.value[modeKey]
-  isGameModesOpen.value = false
-  handleRestart()
 }
 
 const handleSkip = () => {
@@ -196,13 +144,10 @@ const generateNewTarget = () => {
 
   const randomIndex = Math.floor(Math.random() * gameStats.value.remainingCountries.length)
   const country = gameStats.value.remainingCountries[randomIndex]
-
   targetCountry.value = {
-    localizedName: country.properties[props.selectedLanguage], // The display name in selected language
-    adminName: country.properties.ADMIN,  // The official name used for validation
-    id: country.properties.ISO_A3
+    name: country.properties[props.selectedLanguage],
+    id: country.id
   }
-
   hints.value = {
     continent: country.properties.CONTINENT,
     population: country.properties.POP_EST,
@@ -211,30 +156,27 @@ const generateNewTarget = () => {
 
 const showCountry = () => {
   if (targetCountry.value && gameMap.value) {
-    gameMap.value.highlightCountry({
-      name: targetCountry.value.localizedName
-    }, 0, '#ff4444', true)
+    gameMap.value.highlightCountry(targetCountry.value, 0, '#ff4444', true)
     handleCorrectGuess()
   }
 }
 
 const handleRestart = () => {
-  if (!currentGameMode.value || !countries.value.length) return
-
-  // Filter using ADMIN property (English names) to match with gameMode countries
-  const filteredCountries = countries.value.filter(country =>
-      currentGameMode.value.countries.includes(country.properties.ADMIN)
-  )
+  // Reset game stats
+  const filterStrategy = filterStrategies[currentGameMode.value] || filterStrategies.all
+  const filteredCountries = filterStrategy(countries.value)
 
   gameStats.value = {
     totalCountries: filteredCountries.length,
     foundCountries: 0,
     attempts: 0,
     correctAttempts: 0,
+    skippedAttempts: 0,
     remainingCountries: filteredCountries,
     foundList: []
   }
 
+  // Reset map colors
   if (gameMap.value) {
     gameMap.value.resetMapColors()
   }
@@ -254,16 +196,58 @@ const loadCountries = async () => {
   try {
     const response = await fetch('/Guess-It/ne_10m_admin_0_countries_lakes_no_antarktika.json')
     const data = await response.json()
-    countries.value = data.features
-
-    // Select first game mode as default
-    const firstModeKey = Object.keys(gameModes.value)[0]
-    selectGameMode(firstModeKey)
+    // Filter out Vatican City
+    countries.value = data.features.filter(country =>
+        country.properties.ADMIN !== 'Vatican' &&
+        country.properties.NAME !== 'Vatican City'
+    )
+    handleGameModeChange()
   } catch (error) {
     console.error('Error loading countries:', error)
   }
 }
 
+const handleGameModeChange = () => {
+  handleRestart()
+  generateNewTarget()
+}
+
+const filterStrategies = {
+  // Population-based filters
+  top200_population: (countries) => sortByPopulation(countries).slice(0, 200),
+  top100_population: (countries) => sortByPopulation(countries).slice(0, 100),
+  top50_population: (countries) => sortByPopulation(countries).slice(0, 50),
+  top20_population: (countries) => sortByPopulation(countries).slice(0, 20),
+
+  // GDP-based filters
+  top200_gdp: (countries) => sortByGDP(countries).slice(0, 200),
+  top100_gdp: (countries) => sortByGDP(countries).slice(0, 100),
+  top50_gdp: (countries) => sortByGDP(countries).slice(0, 50),
+  top20_gdp: (countries) => sortByGDP(countries).slice(0, 20),
+
+  // Continent-based filters
+  europe_continent: (countries) => filterByContinent(countries, 'Europe'),
+  asia_continent: (countries) => filterByContinent(countries, 'Asia'),
+  africa_continent: (countries) => filterByContinent(countries, 'Africa'),
+  americas_continent: (countries) => filterByContinent(countries, 'North America', 'South America'),
+  oceania_continent: (countries) => filterByContinent(countries, 'Oceania'),
+
+  // Default - all countries
+  all: (countries) => countries
+}
+
+const sortByPopulation = (countries) => {
+  return countries.slice().sort((a, b) => b.properties.POP_EST - a.properties.POP_EST)
+}
+
+const sortByGDP = (countries) => {
+  return countries.slice().sort((a, b) => b.properties.GDP_MD_EST - a.properties.GDP_MD_EST)
+}
+
+const filterByContinent = (countries, ...continents) => {
+  return countries.filter(country => continents.includes(country.properties.CONTINENT))
+}
+
 onMounted(loadCountries)
-watch(() => props.selectedLanguage, handleRestart)
+watch(() => props.selectedLanguage, handleGameModeChange)
 </script>

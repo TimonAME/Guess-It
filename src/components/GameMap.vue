@@ -21,10 +21,9 @@
 </template>
 
 <script setup>
-import {ref, computed, onMounted, watch, nextTick} from 'vue'
-import {LMap, LGeoJson} from '@vue-leaflet/vue-leaflet'
+import {computed, onMounted, ref, watch} from 'vue'
+import {LGeoJson, LMap} from '@vue-leaflet/vue-leaflet'
 import 'leaflet/dist/leaflet.css'
-import L from 'leaflet'
 
 const props = defineProps(['selectedLanguage'])
 const emit = defineEmits(['country-click', 'country-hover'])
@@ -64,8 +63,7 @@ const geoJsonOptions = computed(() => ({
 const loadCountriesData = async () => {
   try {
     const response = await fetch('/Guess-It/ne_10m_admin_0_countries_lakes_no_antarktika.json')
-    const data = await response.json()
-    countriesData.value = data
+    countriesData.value = await response.json()
   } catch (error) {
     console.error('Error loading GeoJSON:', error)
   }
@@ -181,7 +179,28 @@ const highlightCountry = (country, timeout = 0, highlightColor = '#42b983', zoom
   }
 }
 
-defineExpose({ highlightCountry, resetMapColors })
+const resetCountryColor = (country) => {
+  if (!geoJsonLayer.value?.leafletObject) return
+
+  const layers = geoJsonLayer.value.leafletObject.getLayers()
+
+  // Find the layer by country name using selectedLanguage property
+  const targetLayer = layers.find(layer =>
+      layer.feature.properties[props.selectedLanguage] === country.name
+  )
+
+  if (targetLayer) {
+    targetLayer.setStyle({
+      fillColor: '#8c322a',
+      weight: 1,
+      opacity: 1,
+      color: 'white',
+      fillOpacity: 0.7
+    })
+  }
+}
+
+defineExpose({ highlightCountry, resetMapColors, resetCountryColor })
 </script>
 
 <style scoped>
