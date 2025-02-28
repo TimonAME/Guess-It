@@ -57,7 +57,12 @@ const geoJsonOptions = computed(() => ({
 
 // Add this new function to handle layer styling and events
 const updateLayerStyle = (feature, layer) => {
-  const isIncluded = props.currentGameMode?.countries.includes(feature.properties.ADMIN)
+  let isIncluded;
+  if (props.currentGameMode) {
+    isIncluded = props.currentGameMode?.countries.includes(feature.properties.ADMIN)
+  } else {
+    isIncluded = true
+  }
 
   // Set style based on inclusion
   layer.setStyle({
@@ -67,7 +72,7 @@ const updateLayerStyle = (feature, layer) => {
     color: 'white',
     fillOpacity: isIncluded ? 0.7 : 0.3
   })
-
+/*
   // Remove existing event listeners
   layer.off('mouseover mouseout click')
 
@@ -79,6 +84,8 @@ const updateLayerStyle = (feature, layer) => {
       click: handleCountryClick
     })
   }
+
+ */
 }
 
 // Add a watcher for currentGameMode
@@ -106,6 +113,8 @@ watch(() => props.selectedLanguage, loadCountriesData)
 
 const handleCountryClick = (e) => {
   const feature = e.layer.feature
+  if (props.currentGameMode && !props.currentGameMode?.countries.includes(feature.properties.ADMIN)) return
+
   emit('country-click', feature, (isCorrect) => {
     if (!isCorrect) {
       e.layer.setStyle({
@@ -125,6 +134,9 @@ const handleCountryClick = (e) => {
 }
 
 const handleMouseOver = (e) => {
+  const feature = e.layer.feature
+  if (props.currentGameMode && !props.currentGameMode?.countries.includes(feature.properties.ADMIN)) return
+
   if (e.layer.feature !== temporaryColoredFeature.value) {
     e.layer.setStyle({
       weight: 3
@@ -134,6 +146,9 @@ const handleMouseOver = (e) => {
 }
 
 const handleMouseOut = (e) => {
+  const feature = e.layer.feature
+  if (props.currentGameMode && !props.currentGameMode?.countries.includes(feature.properties.ADMIN)) return
+
   if (e.layer.feature !== temporaryColoredFeature.value) {
     e.layer.setStyle({
       weight: 1

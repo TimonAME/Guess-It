@@ -160,7 +160,6 @@ const languages = {
 
 const selectGameMode = (mode) => {
   router.push(`/${mode}`)
-  currentMode.value = mode;
   isGameModeOpen.value = false
 }
 </script>
