@@ -39,30 +39,72 @@
     </div>
   </div>
 
-  <!-- Game Modes -->
+  <!-- Game Mode Selector -->
   <div class="fixed top-4 left-4 h-fit z-10">
-    <game-modes
-        v-model:gameMode="currentGameMode"
-        @update:gameMode="handleGameModeChange"
-    />
+    <div
+        class="relative"
+        @mouseenter="isGameModesOpen = true"
+        @mouseleave="isGameModesOpen = false"
+        @click="isGameModesOpen = !isGameModesOpen"
+    >
+      <button
+          class="h-full bg-white/90 backdrop-blur-sm rounded-lg px-4 py-2 shadow-lg flex items-center gap-2 hover:bg-white/95 transition-all duration-200 border border-sunset-100/20"
+      >
+        <span class="text-sunset-gray font-medium">{{ currentGameMode?.name || 'Select Mode' }}</span>
+        <svg
+            class="hidden sm:block h-4 w-4 text-sunset-200 transform transition-transform duration-200"
+            :class="isGameModesOpen ? 'rotate-180' : ''"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+        >
+          <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M19 9l-7 7-7-7"
+          />
+        </svg>
+      </button>
+
+      <div
+          v-show="isGameModesOpen"
+          class="absolute top-full left-0 w-64 bg-white/90 backdrop-blur-sm rounded-lg shadow-xl max-h-96 overflow-y-auto border border-sunset-100/20"
+      >
+        <div class="py-2 space-y-1">
+          <div v-for="(mode, key) in gameModes"
+               :key="key"
+               @click.stop="selectGameMode(key)"
+               class="w-full text-left px-4 py-2 text-sunset-gray hover:bg-sunset-100/10 transition-colors"
+               :class="currentGameMode?.name === mode.name ? 'bg-sunset-100/20 text-sunset-400 font-medium' : ''"
+          >
+            <div class="font-medium">{{ mode.name }}</div>
+            <div class="text-sm opacity-80">{{ mode.description }}</div>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 
   <!-- Map -->
   <game-map
       ref="gameMap"
       :selected-language="selectedLanguage"
+      :current-game-mode="currentGameMode"
   />
 </template>
 
 <script setup>
 import { ref, onMounted, watch } from 'vue'
 import GameMap from './GameMap.vue'
-import GameModes from './GameModes.vue'
+import gameModeData from '@/assets/gameModes.json'
 
 const props = defineProps(['selectedLanguage'])
 const gameMap = ref(null)
 const countryInput = ref('')
-const currentGameMode = ref('all')
+const isGameModesOpen = ref(false)
+const gameModes = ref(gameModeData)
+const currentGameMode = ref(null)
 const countries = ref([])
 
 const gameStats = ref({
@@ -97,7 +139,6 @@ const checkCountry = () => {
     )
     gameStats.value.foundList.push(foundCountry)
 
-    // Highlight and zoom to the found country
     if (gameMap.value) {
       const countryData = {
         name: foundCountry.properties[props.selectedLanguage],
@@ -110,9 +151,18 @@ const checkCountry = () => {
   countryInput.value = ''
 }
 
+const selectGameMode = (modeKey) => {
+  currentGameMode.value = gameModes.value[modeKey]
+  isGameModesOpen.value = false
+  handleRestart()
+}
+
 const handleRestart = () => {
-  const filterStrategy = filterStrategies[currentGameMode.value] || filterStrategies.all
-  const filteredCountries = filterStrategy(countries.value)
+  if (!currentGameMode.value || !countries.value.length) return
+
+  const filteredCountries = countries.value.filter(country =>
+      currentGameMode.value.countries.includes(country.properties.ADMIN)
+  )
 
   gameStats.value = {
     totalCountries: filteredCountries.length,
@@ -138,45 +188,15 @@ const loadCountries = async () => {
         country.properties.ADMIN !== 'Vatican' &&
         country.properties.NAME !== 'Vatican City'
     )
-    handleGameModeChange()
+
+    // Select first game mode as default
+    const firstModeKey = Object.keys(gameModes.value)[0]
+    selectGameMode(firstModeKey)
   } catch (error) {
     console.error('Error loading countries:', error)
   }
 }
 
-const handleGameModeChange = () => {
-  handleRestart()
-}
-
-const filterStrategies = {
-  top200_population: (countries) => sortByPopulation(countries).slice(0, 200),
-  top100_population: (countries) => sortByPopulation(countries).slice(0, 100),
-  top50_population: (countries) => sortByPopulation(countries).slice(0, 50),
-  top20_population: (countries) => sortByPopulation(countries).slice(0, 20),
-  top200_gdp: (countries) => sortByGDP(countries).slice(0, 200),
-  top100_gdp: (countries) => sortByGDP(countries).slice(0, 100),
-  top50_gdp: (countries) => sortByGDP(countries).slice(0, 50),
-  top20_gdp: (countries) => sortByGDP(countries).slice(0, 20),
-  europe_continent: (countries) => filterByContinent(countries, 'Europe'),
-  asia_continent: (countries) => filterByContinent(countries, 'Asia'),
-  africa_continent: (countries) => filterByContinent(countries, 'Africa'),
-  americas_continent: (countries) => filterByContinent(countries, 'North America', 'South America'),
-  oceania_continent: (countries) => filterByContinent(countries, 'Oceania'),
-  all: (countries) => countries
-}
-
-const sortByPopulation = (countries) => {
-  return countries.slice().sort((a, b) => b.properties.POP_EST - a.properties.POP_EST)
-}
-
-const sortByGDP = (countries) => {
-  return countries.slice().sort((a, b) => b.properties.GDP_MD_EST - a.properties.GDP_MD_EST)
-}
-
-const filterByContinent = (countries, ...continents) => {
-  return countries.filter(country => continents.includes(country.properties.CONTINENT))
-}
-
 onMounted(loadCountries)
-watch(() => props.selectedLanguage, handleGameModeChange)
+watch(() => props.selectedLanguage, handleRestart)
 </script>

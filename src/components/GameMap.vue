@@ -28,7 +28,7 @@ import 'leaflet/dist/leaflet.css'
 const props = defineProps(['selectedLanguage', 'currentGameMode'])
 const emit = defineEmits(['country-click', 'country-hover'])
 
-const zoom = ref(4)
+const zoom = ref(3)
 const center = ref([20, 0])
 const map = ref(null)
 const geoJsonLayer = ref(null)
@@ -142,7 +142,6 @@ const handleMouseOut = (e) => {
 }
 
 const zoomToCountry = (layer) => {
-  // TODO: fix - only is true after user zoomes once, before that it is false
   if (!map.value) return;
 
   try {
@@ -159,16 +158,17 @@ const zoomToCountry = (layer) => {
 }
 
 const resetMapColors = () => {
-  if (!geoJsonLayer.value?.leafletObject) return
+  if (!geoJsonLayer.value?.leafletObject || !props.currentGameMode) return
 
   const layers = geoJsonLayer.value.leafletObject.getLayers()
   layers.forEach(layer => {
+    const isIncluded = props.currentGameMode.countries.includes(layer.feature.properties.ADMIN)
     layer.setStyle({
-      fillColor: '#8c322a',
-      weight: 1,
+      fillColor: isIncluded ? '#8c322a' : '#d3d3d3',
+      weight: isIncluded ? 1 : 0.5,
       opacity: 1,
       color: 'white',
-      fillOpacity: 0.7
+      fillOpacity: isIncluded ? 0.7 : 0.3
     })
   })
 }
