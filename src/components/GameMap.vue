@@ -25,7 +25,7 @@ import {computed, onMounted, ref, watch} from 'vue'
 import {LGeoJson, LMap} from '@vue-leaflet/vue-leaflet'
 import 'leaflet/dist/leaflet.css'
 
-const props = defineProps(['selectedLanguage'])
+const props = defineProps(['selectedLanguage', 'currentGameMode'])
 const emit = defineEmits(['country-click', 'country-hover'])
 
 const zoom = ref(4)
@@ -48,17 +48,48 @@ const mapOptions = {
   maxBounds: maxBounds,
 }
 
+// In GameMap.vue, update the geoJsonOptions computed property
 const geoJsonOptions = computed(() => ({
   onEachFeature: (feature, layer) => {
-    layer.setStyle({
-      fillColor: '#8c322a',
-      weight: 1,
-      opacity: 1,
-      color: 'white',
-      fillOpacity: 0.7
-    })
+    updateLayerStyle(feature, layer)
   }
 }))
+
+// Add this new function to handle layer styling and events
+const updateLayerStyle = (feature, layer) => {
+  const isIncluded = props.currentGameMode?.countries.includes(feature.properties.ADMIN)
+
+  // Set style based on inclusion
+  layer.setStyle({
+    fillColor: isIncluded ? '#8c322a' : '#d3d3d3',
+    weight: isIncluded ? 1 : 0.5,
+    opacity: 1,
+    color: 'white',
+    fillOpacity: isIncluded ? 0.7 : 0.3
+  })
+
+  // Remove existing event listeners
+  layer.off('mouseover mouseout click')
+
+  // Add event listeners only for included countries
+  if (!isIncluded) {
+    layer.on({
+      mouseover: handleMouseOver,
+      mouseout: handleMouseOut,
+      click: handleCountryClick
+    })
+  }
+}
+
+// Add a watcher for currentGameMode
+watch(() => props.currentGameMode, () => {
+  if (!geoJsonLayer.value?.leafletObject) return
+
+  const layers = geoJsonLayer.value.leafletObject.getLayers()
+  layers.forEach(layer => {
+    updateLayerStyle(layer.feature, layer)
+  })
+}, { deep: true })
 
 const loadCountriesData = async () => {
   try {

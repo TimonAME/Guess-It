@@ -104,6 +104,7 @@
       ref="gameMap"
       @country-click="handleCountryClick"
       :selected-language="selectedLanguage"
+      :current-game-mode="currentGameMode"
   />
 </template>
 
