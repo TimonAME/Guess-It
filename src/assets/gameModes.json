@@ -716,5 +716,18 @@
       "Vanuatu",
       "Wallis and Futuna"
     ]
+  },
+  "G7": {
+    "name": "G7 Countries",
+    "description": "Learn all G7 countries",
+    "countries": [
+      "Canada",
+      "France",
+      "Germany",
+      "Italy",
+      "Japan",
+      "United Kingdom",
+      "United States of America"
+    ]
   }
 }
