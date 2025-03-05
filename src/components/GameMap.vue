@@ -24,6 +24,7 @@
 import {computed, onMounted, ref, watch} from 'vue'
 import {LGeoJson, LMap} from '@vue-leaflet/vue-leaflet'
 import 'leaflet/dist/leaflet.css'
+import L from 'leaflet'
 
 const props = defineProps(['selectedLanguage', 'currentGameMode'])
 const emit = defineEmits(['country-click', 'country-hover'])
@@ -37,7 +38,7 @@ const temporaryColoredFeature = ref(null)
 
 const maxBounds = [
   [-70, -300], // Southwest coordinates
-  [180, 300]    // Northeast coordinates
+  [180, 300]   // Northeast coordinates
 ]
 
 const mapOptions = {

@@ -12,7 +12,7 @@
             :disabled="gameStats.foundCountries === gameStats.totalCountries"
         />
         <button @click="handleRestart"
-                class="px-4 py-1 bg-green-100 text-green-700 rounded-md hover:bg-green-200 transition-colors">
+                class="px-4 py-1 bg-red-100 text-red-700 rounded-md hover:bg-red-200 transition-colors">
           Restart
         </button>
       </div>
@@ -125,11 +125,14 @@ const checkCountry = () => {
   if (!countryInput.value.trim()) return
 
   gameStats.value.attempts++
+
   const normalizedInput = countryInput.value.trim().toLowerCase()
 
-  const foundCountry = gameStats.value.remainingCountries.find(
-      country => country.properties[props.selectedLanguage].toLowerCase() === normalizedInput
-  )
+  const foundCountry = gameStats.value.remainingCountries.find(country => {
+    return Object.entries(country.properties)
+        .filter(([key]) => key.startsWith('NAME_'))
+        .some(([_, value]) => String(value).toLowerCase() === normalizedInput);
+  });
 
   if (foundCountry) {
     gameStats.value.correctAttempts++
