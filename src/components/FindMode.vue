@@ -216,7 +216,6 @@ const showCountry = () => {
 const handleRestart = () => {
   if (!currentGameMode.value || !countries.value.length) return
 
-  // Filter using ADMIN property (English names) to match with gameMode countries
   const filteredCountries = countries.value.filter(country =>
       currentGameMode.value.countries.includes(country.properties.ADMIN)
   )
