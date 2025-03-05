@@ -1,6 +1,6 @@
 <template>
   <div class="fixed sm:top-4 bottom-4 w-fit h-fit mx-auto left-0 right-0 flex flex-col gap-2 items-center z-10">
-    <div class="sm:order-1 order-3 bg-white/90 backdrop-blur-sm text-sm rounded-lg px-4 py-3 shadow-lg border border-sunset-100/20">
+    <div class="sm:order-1 order-4 bg-white/90 backdrop-blur-sm text-sm rounded-lg px-4 py-3 shadow-lg border border-sunset-100/20">
       <div class="flex items-center gap-4 justify-between mb-3">
         <button @click="toggleHints"
                 class="px-4 py-1 bg-blue-100 text-blue-700 rounded-md hover:bg-blue-200 transition-colors">
@@ -11,19 +11,13 @@
           Skip
         </button>
         <button @click="showCountry"
-                class="px-4 py-1 bg-red-100 text-red-700 rounded-md hover:bg-red-200 transition-colors">
+                class="px-4 py-1 bg-green-100 text-green-700 rounded-md hover:bg-green-200 transition-colors">
           Show
         </button>
         <button @click="handleRestart"
-                class="px-4 py-1 bg-green-100 text-green-700 rounded-md hover:bg-green-200 transition-colors">
+                class="px-4 py-1 bg-red-100 text-red-700 rounded-md hover:bg-red-200 transition-colors">
           Restart
         </button>
-      </div>
-
-      <div v-if="showHints" class="flex items-center gap-4 justify-between text-sunset-gray mb-3">
-        <span class="mr-4">Continent: <strong>{{ hints?.continent }}</strong></span>
-        <span>Population: <strong>{{ formatNumber(hints?.population) }}</strong></span>
-        <!-- TODO: add better information (e.g. flag) -->
       </div>
 
       <div class="flex items-center justify-between">
@@ -32,15 +26,44 @@
       </div>
     </div>
 
+    <div v-if="showHints" class="sm:order-2 order-3 flex flex-wrap gap-3 text-sunset-gray items-center justify-center">
+      <!--
+      <div class="bg-white/90 backdrop-blur-sm rounded-lg p-3 flex flex-col items-center shadow-lg border border-sunset-100/20">
+        <span class="text-xs font-semibold mb-1 opacity-70">Continent</span>
+        <strong class="text-sm">{{ hints?.continent }}</strong>
+      </div>
+      -->
+
+      <div class="bg-white/90 backdrop-blur-sm rounded-lg p-3 flex flex-col items-center shadow-lg border border-sunset-100/20">
+        <span class="text-xs font-semibold mb-1 opacity-70">Population</span>
+        <strong class="text-sm select-text">{{ formatNumber(hints?.population) }}</strong>
+      </div>
+
+      <div class="bg-white/90 backdrop-blur-sm rounded-lg p-3 flex flex-col items-center shadow-lg border border-sunset-100/20">
+        <span class="text-xs font-semibold mb-1 opacity-70">Capital</span>
+        <strong class="text-sm select-text">{{ hints?.capital }}</strong>
+      </div>
+
+      <div v-if="hints?.flag" class="bg-white/90 backdrop-blur-sm rounded-lg px-3 flex flex-col items-center shadow-lg border border-sunset-100/20">
+        <img
+            :key="hints.flag"
+            :src="hints.flag"
+            @error="onFlagLoadError"
+            alt="country flag"
+            class="object-contain"
+        >
+      </div>
+    </div>
+
     <div v-if="gameStats.foundCountries !== gameStats.totalCountries || gameStats.totalCountries === 0"
-         class="sm:order-2 order-2 bg-white/90 backdrop-blur-sm rounded-lg px-6 py-3 shadow-lg border border-sunset-100/20 text-center">
-      <h2 class="text-center justify-center text-2xl font-semibold text-sunset-gray">
+         class="sm:order-3 order-2 bg-white/90 backdrop-blur-sm rounded-lg px-6 py-3 shadow-lg border border-sunset-100/20 text-center">
+      <h2 class="text-center justify-center text-2xl font-semibold text-sunset-gray select-text">
         {{ targetCountry?.localizedName || 'Loading...' }}
       </h2>
     </div>
 
     <!-- Game Complete Message -->
-    <RoundCompleteDisplay @click="handleRestart" v-if="gameStats.foundCountries === gameStats.totalCountries && gameStats.totalCountries !== 0" />
+    <RoundCompleteDisplay class="sm:order-4 order-1" @click="handleRestart" v-if="gameStats.foundCountries === gameStats.totalCountries && gameStats.totalCountries !== 0" />
   </div>
 
   <!-- Game Mode Selector -->
@@ -102,6 +125,7 @@
 import { ref, computed, onMounted, watch } from 'vue'
 import GameMap from './GameMap.vue'
 import gameModeData from '@/assets/gameModes.json'
+import countryCapitalData from '@/assets/country-by-capital-city.json'
 import ScoreCounter from "@/components/ScoreCounter.vue";
 import AccuracyCounter from "@/components/AccuracyCounter.vue";
 import RoundCompleteDisplay from "@/components/RoundCompleteDisplay.vue";
@@ -115,6 +139,7 @@ const isGameModesOpen = ref(false)
 const countries = ref([])
 const gameModes = ref(gameModeData)
 const currentGameMode = ref(null)
+const countryCapitals = ref(countryCapitalData)
 
 const gameStats = ref({
   totalCountries: 0,
@@ -129,6 +154,13 @@ const calculateAccuracy = () => {
   if (gameStats.value.attempts === 0) return 0;
 
   return Math.round((gameStats.value.correctAttempts / gameStats.value.attempts) * 100);
+}
+
+const onFlagLoadError = (event) => {
+  // Null out the flag in hints to prevent repeated loading attempts
+  if (hints.value) {
+    hints.value.flag = null;
+  }
 }
 
 const handleCountryClick = (feature, callback) => {
@@ -192,6 +224,9 @@ const generateNewTarget = () => {
   const randomIndex = Math.floor(Math.random() * gameStats.value.remainingCountries.length)
   const country = gameStats.value.remainingCountries[randomIndex]
 
+  const capital = countryCapitals.value.find(c => c.country === country.properties.ADMIN)?.city || 'Unknown'
+  const flag = `https://flagsapi.com/${country.properties.ISO_A2}/flat/64.png`
+
   targetCountry.value = {
     localizedName: country.properties[props.selectedLanguage], // The display name in selected language
     adminName: country.properties.ADMIN,  // The official name used for validation
@@ -201,6 +236,8 @@ const generateNewTarget = () => {
   hints.value = {
     continent: country.properties.CONTINENT,
     population: country.properties.POP_EST,
+    flag: flag,
+    capital: capital
   }
 }
 

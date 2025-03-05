@@ -24,7 +24,7 @@
     </div>
 
     <!-- Game Complete Message -->
-    <RoundCompleteDisplay @click="handleRestart" v-if="gameStats.foundCountries === gameStats.totalCountries && gameStats.totalCountries !== 0" />
+    <RoundCompleteDisplay class="sm:order-3 order-1" @click="handleRestart" v-if="gameStats.foundCountries === gameStats.totalCountries && gameStats.totalCountries !== 0" />
   </div>
 
   <!-- Game Mode Selector -->
