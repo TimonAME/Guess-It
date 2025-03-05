@@ -28,7 +28,7 @@
       <div class="flex items-center justify-between">
         <div class="text-sunset-gray">
           <span>
-            ({{ gameStats.foundCountries }}/{{ gameStats.totalCountries }} found)
+            (<ScoreCounter :value="gameStats.foundCountries" />/{{ gameStats.totalCountries }} found)
           </span>
         </div>
         <div class="text-sunset-gray">
@@ -112,6 +112,7 @@
 import { ref, computed, onMounted, watch } from 'vue'
 import GameMap from './GameMap.vue'
 import gameModeData from '@/assets/gameModes.json'
+import ScoreCounter from "@/components/ScoreCounter.vue";
 
 const props = defineProps(['selectedLanguage'])
 const gameMap = ref(null)
