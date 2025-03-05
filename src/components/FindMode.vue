@@ -26,14 +26,8 @@
       </div>
 
       <div class="flex items-center justify-between">
-        <div class="text-sunset-gray">
-          <span>
-            (<ScoreCounter :value="gameStats.foundCountries" />/{{ gameStats.totalCountries }} found)
-          </span>
-        </div>
-        <div class="text-sunset-gray">
-          Accuracy: {{ calculateAccuracy() }}%
-        </div>
+        <ScoreCounter :value="gameStats.foundCountries" :total="gameStats.totalCountries" />
+        <AccuracyCounter :value="calculateAccuracy()" />
       </div>
     </div>
 
@@ -113,6 +107,7 @@ import { ref, computed, onMounted, watch } from 'vue'
 import GameMap from './GameMap.vue'
 import gameModeData from '@/assets/gameModes.json'
 import ScoreCounter from "@/components/ScoreCounter.vue";
+import AccuracyCounter from "@/components/AccuracyCounter.vue";
 
 const props = defineProps(['selectedLanguage'])
 const gameMap = ref(null)
@@ -134,8 +129,9 @@ const gameStats = ref({
 })
 
 const calculateAccuracy = () => {
-  return gameStats.value.attempts === 0 ? 100 :
-      Math.round((gameStats.value.correctAttempts / gameStats.value.attempts) * 100)
+  if (gameStats.value.attempts === 0) return 0;
+
+  return Math.round((gameStats.value.correctAttempts / gameStats.value.attempts) * 100);
 }
 
 const handleCountryClick = (feature, callback) => {

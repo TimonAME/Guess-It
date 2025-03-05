@@ -1,13 +1,13 @@
 <template>
-  <div class="score-container">
+  <div class="score-container text-sunset-gray">
     <span
-        :class="{ 'score-increment': shouldAnimate }"
+        :class="{ 'score-increment': shouldAnimateText }"
         class="score-display"
     >
-      {{ displayValue }}
+      {{ displayValue }}/{{total}}
     </span>
     <div
-        v-if="shouldAnimate"
+        v-if="shouldAnimateParticle"
         class="score-particles"
         :key="props.value"
     >
@@ -27,17 +27,26 @@ const props = defineProps({
   value: {
     type: Number,
     required: true
+  },
+  total: {
+    type: Number,
+    required: true
   }
 });
 
 const displayValue = ref(props.value);
-const shouldAnimate = ref(false);
+const shouldAnimateText = ref(false);
+const shouldAnimateParticle = ref(false);
 
 watch(() => props.value, (newValue, oldValue) => {
   if (newValue > oldValue) {
-    shouldAnimate.value = true;
+    shouldAnimateText.value = true;
+    shouldAnimateParticle.value = true;
     setTimeout(() => {
-      shouldAnimate.value = false;
+      shouldAnimateText.value = false;
+    }, 300);
+    setTimeout(() => {
+      shouldAnimateParticle.value = false;
     }, 600);
   }
   displayValue.value = newValue;
@@ -82,19 +91,19 @@ watch(() => props.value, (newValue, oldValue) => {
 }
 
 .particle:nth-child(2) {
-  animation: particle-burst-2 0.6s ease-out 0.1s;
+  animation: particle-burst-2 0.5s ease-out 0.1s;
 }
 
 .particle:nth-child(3) {
-  animation: particle-burst-3 0.6s ease-out 0.15s;
+  animation: particle-burst-3 0.6s ease-out 0.125s;
 }
 
 .particle:nth-child(4) {
-  animation: particle-burst-4 0.6s ease-out 0.2s;
+  animation: particle-burst-4 0.5s ease-out 0.15s;
 }
 
 .particle:nth-child(5) {
-  animation: particle-burst-5 0.6s ease-out 0.25s;
+  animation: particle-burst-5 0.6s ease-out 0.175s;
 }
 
 @keyframes scoreUp {
@@ -116,11 +125,11 @@ watch(() => props.value, (newValue, oldValue) => {
   }
   50% {
     opacity: 1;
-    transform: translate(-25px, -25px) scale(1.5);
+    transform: translate(-20px, -20px) scale(1);
   }
   100% {
     opacity: 0;
-    transform: translate(-50px, -50px) scale(2);
+    transform: translate(-40px, -40px) scale(2);
   }
 }
 
@@ -131,11 +140,11 @@ watch(() => props.value, (newValue, oldValue) => {
   }
   50% {
     opacity: 1;
-    transform: translate(25px, -25px) scale(1.5);
+    transform: translate(20px, -20px) scale(1);
   }
   100% {
     opacity: 0;
-    transform: translate(50px, -50px) scale(2);
+    transform: translate(40px, -40px) scale(2);
   }
 }
 
@@ -146,11 +155,11 @@ watch(() => props.value, (newValue, oldValue) => {
   }
   50% {
     opacity: 1;
-    transform: translate(-25px, 25px) scale(1.5);
+    transform: translate(-20px, 20px) scale(1);
   }
   100% {
     opacity: 0;
-    transform: translate(-50px, 50px) scale(2);
+    transform: translate(-40px, 40px) scale(2);
   }
 }
 
@@ -161,11 +170,11 @@ watch(() => props.value, (newValue, oldValue) => {
   }
   50% {
     opacity: 1;
-    transform: translate(25px, 25px) scale(1.5);
+    transform: translate(20px, 20px) scale(1);
   }
   100% {
     opacity: 0;
-    transform: translate(50px, 50px) scale(2);
+    transform: translate(40px, 40px) scale(2);
   }
 }
 
@@ -176,11 +185,11 @@ watch(() => props.value, (newValue, oldValue) => {
   }
   50% {
     opacity: 1;
-    transform: translate(0, -35px) scale(1.5);
+    transform: translate(0, -20px) scale(1);
   }
   100% {
     opacity: 0;
-    transform: translate(0, -70px) scale(2);
+    transform: translate(0, -40px) scale(2);
   }
 }
 </style>
