@@ -1,7 +1,7 @@
 {
   "major_nations": {
     "name": "Major Nations of the World",
-    "description": "A list of 162 significant countries, excluding small island nations and minor territories.",
+    "description": "A list of significant countries, excluding small island nations and minor territories.",
     "countries": [
       "Afghanistan",
       "Albania",

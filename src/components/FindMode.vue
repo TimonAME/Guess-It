@@ -26,34 +26,7 @@
       </div>
     </div>
 
-    <div v-if="showHints" class="sm:order-2 order-3 flex flex-wrap gap-3 text-sunset-gray items-center justify-center">
-      <!--
-      <div class="bg-white/90 backdrop-blur-sm rounded-lg p-3 flex flex-col items-center shadow-lg border border-sunset-100/20">
-        <span class="text-xs font-semibold mb-1 opacity-70">Continent</span>
-        <strong class="text-sm">{{ hints?.continent }}</strong>
-      </div>
-      -->
-
-      <div class="bg-white/90 backdrop-blur-sm rounded-lg p-3 flex flex-col items-center shadow-lg border border-sunset-100/20">
-        <span class="text-xs font-semibold mb-1 opacity-70">Population</span>
-        <strong class="text-sm select-text">{{ formatNumber(hints?.population) }}</strong>
-      </div>
-
-      <div class="bg-white/90 backdrop-blur-sm rounded-lg p-3 flex flex-col items-center shadow-lg border border-sunset-100/20">
-        <span class="text-xs font-semibold mb-1 opacity-70">Capital</span>
-        <strong class="text-sm select-text">{{ hints?.capital }}</strong>
-      </div>
-
-      <div v-if="hints?.flag" class="bg-white/90 backdrop-blur-sm rounded-lg px-3 flex flex-col items-center shadow-lg border border-sunset-100/20">
-        <img
-            :key="hints.flag"
-            :src="hints.flag"
-            @error="onFlagLoadError"
-            alt="country flag"
-            class="object-contain"
-        >
-      </div>
-    </div>
+    <HintsDisplay v-if="showHints" :hints="hints" class="sm:order-2 order-3" />
 
     <div v-if="gameStats.foundCountries !== gameStats.totalCountries || gameStats.totalCountries === 0"
          class="sm:order-3 order-2 bg-white/90 backdrop-blur-sm rounded-lg px-6 py-3 shadow-lg border border-sunset-100/20 text-center">
@@ -129,6 +102,7 @@ import countryCapitalData from '@/assets/country-by-capital-city.json'
 import ScoreCounter from "@/components/ScoreCounter.vue";
 import AccuracyCounter from "@/components/AccuracyCounter.vue";
 import RoundCompleteDisplay from "@/components/RoundCompleteDisplay.vue";
+import HintsDisplay from "@/components/HintsDisplay.vue";
 
 const props = defineProps(['selectedLanguage'])
 const gameMap = ref(null)
@@ -150,12 +124,14 @@ const gameStats = ref({
   foundList: []
 })
 
+// Calculate accuracy based on correct attempts and total attempts for the Accuracy Display
 const calculateAccuracy = () => {
   if (gameStats.value.attempts === 0) return 0;
 
   return Math.round((gameStats.value.correctAttempts / gameStats.value.attempts) * 100);
 }
 
+// Error handler for flag loading
 const onFlagLoadError = (event) => {
   // Null out the flag in hints to prevent repeated loading attempts
   if (hints.value) {
@@ -163,6 +139,7 @@ const onFlagLoadError = (event) => {
   }
 }
 
+// Country click handler from GameMap
 const handleCountryClick = (feature, callback) => {
   const isAlreadyFound = gameStats.value.foundList.some(
       country => country.properties.ADMIN === feature.properties.ADMIN
@@ -181,6 +158,7 @@ const handleCountryClick = (feature, callback) => {
   callback?.(isCorrect)
 }
 
+// Correct guess handler
 const handleCorrectGuess = (feature = null) => {
   const foundCountry = gameStats.value.remainingCountries.find(
       c => c.properties.ADMIN === targetCountry.value.adminName
@@ -233,6 +211,7 @@ const generateNewTarget = () => {
     id: country.properties.ISO_A3
   }
 
+  // Hints erstellen
   hints.value = {
     continent: country.properties.CONTINENT,
     population: country.properties.POP_EST,
