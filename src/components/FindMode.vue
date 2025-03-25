@@ -103,7 +103,9 @@ import ScoreCounter from "@/components/ScoreCounter.vue";
 import AccuracyCounter from "@/components/AccuracyCounter.vue";
 import RoundCompleteDisplay from "@/components/RoundCompleteDisplay.vue";
 import HintsDisplay from "@/components/HintsDisplay.vue";
+import { useMapStore } from '@/stores/mapStore'
 
+const mapStore = useMapStore()
 const props = defineProps(['selectedLanguage'])
 const gameMap = ref(null)
 const targetCountry = ref(null)
@@ -129,14 +131,6 @@ const calculateAccuracy = () => {
   if (gameStats.value.attempts === 0) return 0;
 
   return Math.round((gameStats.value.correctAttempts / gameStats.value.attempts) * 100);
-}
-
-// Error handler for flag loading
-const onFlagLoadError = (event) => {
-  // Null out the flag in hints to prevent repeated loading attempts
-  if (hints.value) {
-    hints.value.flag = null;
-  }
 }
 
 // Country click handler from GameMap
@@ -256,24 +250,22 @@ const toggleHints = () => {
   showHints.value = !showHints.value
 }
 
-const formatNumber = (num) => {
-  return new Intl.NumberFormat().format(num)
-}
-
-const loadCountries = async () => {
-  try {
-    const response = await fetch('/Guess-It/ne_10m_admin_0_countries_lakes_no_antarktika.json')
-    const data = await response.json()
-    countries.value = data.features
+const loadCountries = () => {
+  if (mapStore.countriesData.features.length) {
+    countries.value = mapStore.countriesData.features
 
     // Select first game mode as default
     const firstModeKey = Object.keys(gameModes.value)[0]
     selectGameMode(firstModeKey)
-  } catch (error) {
-    console.error('Error loading countries:', error)
   }
 }
 
-onMounted(loadCountries)
+watch(() => mapStore.countriesData.features.length, (newLength) => {
+  if (newLength > 0) loadCountries()
+})
+
+onMounted(() => {
+  if (mapStore.countriesData.features.length) loadCountries()
+})
 watch(() => props.selectedLanguage, handleRestart)
 </script>

@@ -90,14 +90,16 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import {ref, computed, onMounted} from 'vue'
 import { useGameStore } from '@/stores/gameStore'
 import FindMode from './components/FindMode.vue'
 import NameMode from './components/NameMode.vue'
 import TrainingMode from './components/TrainingMode.vue'
 import TravelMode from './components/TravelMode.vue'
 import ExportMode from './components/ExportMode.vue'
+import { useMapStore } from '@/stores/mapStore'
 
+const mapStore = useMapStore()
 const gameStore = useGameStore()
 const isGameModeOpen = ref(false)
 const isLanguageOpen = ref(false)
@@ -114,6 +116,12 @@ const selectGameMode = (mode) => {
   gameStore.setCurrentMode(mode)
   isGameModeOpen.value = false
 }
+
+// Load the countries data when the app starts
+onMounted(() => {
+  console.log("App mounted")
+  mapStore.loadCountriesData()
+})
 </script>
 
 <style>

@@ -89,7 +89,9 @@ import gameModeData from '@/assets/gameModes.json'
 import ScoreCounter from "@/components/ScoreCounter.vue";
 import AccuracyCounter from "@/components/AccuracyCounter.vue";
 import RoundCompleteDisplay from "@/components/RoundCompleteDisplay.vue";
+import { useMapStore } from '@/stores/mapStore'
 
+const mapStore = useMapStore()
 const props = defineProps(['selectedLanguage'])
 const gameMap = ref(null)
 const countryInput = ref('')
@@ -175,23 +177,24 @@ const handleRestart = () => {
   countryInput.value = ''
 }
 
-const loadCountries = async () => {
-  try {
-    const response = await fetch('/Guess-It/ne_10m_admin_0_countries_lakes_no_antarktika.json')
-    const data = await response.json()
-    countries.value = data.features.filter(country =>
-        country.properties.ADMIN !== 'Vatican' &&
-        country.properties.NAME !== 'Vatican City'
-    )
+const loadCountries = () => {
+  if (mapStore.countriesData.features.length) {
+    countries.value = mapStore.countriesData.features
 
     // Select first game mode as default
     const firstModeKey = Object.keys(gameModes.value)[0]
     selectGameMode(firstModeKey)
-  } catch (error) {
-    console.error('Error loading countries:', error)
   }
 }
 
-onMounted(loadCountries)
+watch(() => mapStore.countriesData.features.length, (newLength) => {
+  if (newLength > 0) loadCountries()
+})
+
+// Replace onMounted with:
+onMounted(() => {
+  if (mapStore.countriesData.features.length) loadCountries()
+})
+
 watch(() => props.selectedLanguage, handleRestart)
 </script>

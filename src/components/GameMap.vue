@@ -8,8 +8,8 @@
         @ready="map = $event.target"
     >
       <l-geo-json
-          v-if="countriesData.features.length"
-          :geojson="countriesData"
+          v-if="mapStore.countriesData.features.length"
+          :geojson="mapStore.countriesData"
           :options="geoJsonOptions"
           @click="handleCountryClick"
           @mouseover="handleMouseOver"
@@ -21,19 +21,19 @@
 </template>
 
 <script setup>
-import {computed, onMounted, ref, watch} from 'vue'
-import {LGeoJson, LMap} from '@vue-leaflet/vue-leaflet'
+import { computed, onMounted, ref, watch } from 'vue'
+import { LGeoJson, LMap } from '@vue-leaflet/vue-leaflet'
 import 'leaflet/dist/leaflet.css'
-import L from 'leaflet'
+import { useMapStore } from '@/stores/mapStore'
 
 const props = defineProps(['selectedLanguage', 'currentGameMode'])
 const emit = defineEmits(['country-click', 'country-hover'])
 
+const mapStore = useMapStore()
 const zoom = ref(3)
 const center = ref([20, 0])
 const map = ref(null)
 const geoJsonLayer = ref(null)
-const countriesData = ref({type: 'FeatureCollection', features: []})
 const temporaryColoredFeature = ref(null)
 
 const maxBounds = [
@@ -49,14 +49,12 @@ const mapOptions = {
   maxBounds: maxBounds,
 }
 
-// In GameMap.vue, update the geoJsonOptions computed property
 const geoJsonOptions = computed(() => ({
   onEachFeature: (feature, layer) => {
     updateLayerStyle(feature, layer)
   }
 }))
 
-// Add this new function to handle layer styling and events
 const updateLayerStyle = (feature, layer) => {
   let isIncluded;
   if (props.currentGameMode) {
@@ -65,7 +63,6 @@ const updateLayerStyle = (feature, layer) => {
     isIncluded = true
   }
 
-  // Set style based on inclusion
   layer.setStyle({
     fillColor: isIncluded ? '#8c322a' : '#d3d3d3',
     weight: isIncluded ? 1 : 0.5,
@@ -73,44 +70,18 @@ const updateLayerStyle = (feature, layer) => {
     color: 'white',
     fillOpacity: isIncluded ? 0.7 : 0.3
   })
-/*
-  // Remove existing event listeners
-  layer.off('mouseover mouseout click')
-
-  // Add event listeners only for included countries
-  if (!isIncluded) {
-    layer.on({
-      mouseover: handleMouseOver,
-      mouseout: handleMouseOut,
-      click: handleCountryClick
-    })
-  }
-
- */
 }
 
-// Add a watcher for currentGameMode
 watch(() => props.currentGameMode, () => {
   if (!geoJsonLayer.value?.leafletObject) return
+
+  console.log("Gamemode changed")
 
   const layers = geoJsonLayer.value.leafletObject.getLayers()
   layers.forEach(layer => {
     updateLayerStyle(layer.feature, layer)
   })
 }, { deep: true })
-
-const loadCountriesData = async () => {
-  try {
-    const response = await fetch('/Guess-It/ne_10m_admin_0_countries_lakes_no_antarktika.json')
-    countriesData.value = await response.json()
-  } catch (error) {
-    console.error('Error loading GeoJSON:', error)
-  }
-}
-
-onMounted(loadCountriesData)
-
-watch(() => props.selectedLanguage, loadCountriesData)
 
 const handleCountryClick = (e) => {
   const feature = e.layer.feature
@@ -193,26 +164,20 @@ const highlightCountry = (country, timeout = 0, highlightColor = '#42b983', zoom
   if (!geoJsonLayer.value?.leafletObject) return
 
   const layers = geoJsonLayer.value.leafletObject.getLayers()
-
-  // Find and highlight the target country
   const targetLayer = layers.find(layer =>
       layer.feature.properties[props.selectedLanguage] === country.name
   )
 
   if (targetLayer) {
-    // Set the style
     targetLayer.setStyle({
       fillColor: highlightColor,
       weight: 2,
       fillOpacity: 0.7
     })
 
-    // Zoom to the country if specified
     if (zoom) zoomToCountry(targetLayer)
 
-    // Only reset the color if a timeout is specified
     if (timeout > 0) {
-      console.log("color reset")
       setTimeout(() => {
         targetLayer.setStyle({
           fillColor: '#8c322a',
@@ -230,8 +195,6 @@ const resetCountryColor = (country) => {
   if (!geoJsonLayer.value?.leafletObject) return
 
   const layers = geoJsonLayer.value.leafletObject.getLayers()
-
-  // Find the layer by country name using selectedLanguage property
   const targetLayer = layers.find(layer =>
       layer.feature.properties[props.selectedLanguage] === country.name
   )
