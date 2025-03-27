@@ -12,8 +12,12 @@ export const useMapStore = defineStore('map', () => {
         try {
             isLoading.value = true
             const response = await fetch('/Guess-It/ne_10m_admin_0_countries_lakes_no_antarktika.json')
-            countriesData.value = await response.json()
-            console.log("Country Data Loaded")
+            const data = await response.json()
+
+            if (data && data.features) {
+                countriesData.value = data
+                console.log("Country Data Loaded")
+            }
         } catch (err) {
             error.value = err
             console.error('Error loading GeoJSON:', err)

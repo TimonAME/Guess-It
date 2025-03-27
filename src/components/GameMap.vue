@@ -46,7 +46,7 @@ const mapOptions = {
   maxZoom: 10,
   zoomControl: false,
   dragging: true,
-  maxBounds: maxBounds,
+  maxBounds: maxBounds
 }
 
 const geoJsonOptions = computed(() => ({

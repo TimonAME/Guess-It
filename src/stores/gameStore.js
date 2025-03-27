@@ -3,8 +3,8 @@ import { defineStore } from 'pinia'
 
 export const useGameStore = defineStore('game', {
     state: () => ({
-        currentMode: 'find',
-        selectedLanguage: 'NAME_DE',
+        currentMode: localStorage.getItem('lastGameMode') || 'find',
+        selectedLanguage: localStorage.getItem('lastLanguage') || 'NAME_DE',
         gameModes: {
             find: { name: 'Find Mode', description: 'Locate countries on the map' },
             name: { name: 'Name Mode', description: 'Type country names' },
@@ -44,9 +44,11 @@ export const useGameStore = defineStore('game', {
     actions: {
         setCurrentMode(mode) {
             this.currentMode = mode
+            localStorage.setItem('lastGameMode', mode)
         },
         setSelectedLanguage(language) {
             this.selectedLanguage = language
+            localStorage.setItem('lastLanguage', language)
         }
     },
     getters: {

@@ -116,12 +116,6 @@ const selectGameMode = (mode) => {
   gameStore.setCurrentMode(mode)
   isGameModeOpen.value = false
 }
-
-// Load the countries data when the app starts
-onMounted(() => {
-  console.log("App mounted")
-  mapStore.loadCountriesData()
-})
 </script>
 
 <style>
