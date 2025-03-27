@@ -2,11 +2,10 @@
   <div class="min-h-screen relative background-pattern select-none">
     <!-- Dynamische Komponente basierend auf dem aktuellen Modus -->
     <component
-        :is="componentMap[gameStore.currentMode]"
+        :is="gameStore.getCurrentModeComponent"
         :selectedLanguage="gameStore.selectedLanguage"
     />
 
-    <!-- Restlicher Code bleibt gleich -->
     <div class="fixed top-4 h-fit right-4 flex sm:flex-row flex-col items-end sm:items-center gap-2 select-none z-10">
       <!-- Game Mode Selector -->
       <div
@@ -19,9 +18,11 @@
             class="bg-white/90 backdrop-blur-sm rounded-lg px-4 py-2 shadow-lg flex items-center gap-2 hover:bg-white/95 transition-all duration-200 border border-sunset-100/20"
         >
           <span class="hidden sm:block text-sunset-gray font-medium">
-            {{ gameStore.currentMode.charAt(0).toUpperCase() + gameStore.currentMode.slice(1) }} Mode
+            {{ gameStore.getCurrentModeDisplayName }}
           </span>
-          <!-- Restlicher Button-Code -->
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-sunset-200" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+          </svg>
         </button>
 
         <!-- Dropdown Menu -->
@@ -30,13 +31,13 @@
             class="absolute right-0 w-48 bg-white/90 backdrop-blur-sm rounded-lg shadow-xl py-1 border border-sunset-100/20 z-20"
         >
           <button
-              v-for="mode in Object.keys(gameStore.gameModes)"
-              :key="mode"
-              @click.stop="selectGameMode(mode)"
+              v-for="mode in gameStore.modes"
+              :key="mode.id"
+              @click.stop="selectGameMode(mode.id)"
               class="w-full text-left px-4 py-2 text-sunset-gray hover:bg-sunset-100/10 transition-colors"
-              :class="gameStore.currentMode === mode ? 'bg-sunset-100/20 text-sunset-400 font-medium' : ''"
+              :class="gameStore.currentMode === mode.id ? 'bg-sunset-100/20 text-sunset-400 font-medium' : ''"
           >
-            {{ mode.charAt(0).toUpperCase() + mode.slice(1) }} Mode
+            {{ mode.displayName }}
           </button>
         </div>
       </div>
@@ -65,8 +66,8 @@
             />
           </svg>
           <span class="hidden sm:block">
-          {{ gameStore.getLanguageLabel(gameStore.selectedLanguage) }}
-        </span>
+            {{ gameStore.getLanguageLabel(gameStore.selectedLanguage) }}
+          </span>
         </button>
 
         <!-- Dropdown Menu -->
@@ -90,27 +91,12 @@
 </template>
 
 <script setup>
-import {ref, computed, onMounted} from 'vue'
+import { ref } from 'vue'
 import { useGameStore } from '@/stores/gameStore'
-import FindMode from './components/FindMode.vue'
-import NameMode from './components/NameMode.vue'
-import TrainingMode from './components/TrainingMode.vue'
-import TravelMode from './components/TravelMode.vue'
-import ExportMode from './components/ExportMode.vue'
-import { useMapStore } from '@/stores/mapStore'
 
-const mapStore = useMapStore()
 const gameStore = useGameStore()
 const isGameModeOpen = ref(false)
 const isLanguageOpen = ref(false)
-
-const componentMap = {
-  find: FindMode,
-  name: NameMode,
-  training: TrainingMode,
-  travel: TravelMode,
-  export: ExportMode
-}
 
 const selectGameMode = (mode) => {
   gameStore.setCurrentMode(mode)

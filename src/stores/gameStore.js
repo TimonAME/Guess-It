@@ -1,17 +1,47 @@
-// src/stores/gameStore.js
 import { defineStore } from 'pinia'
+import FindMode from '@/components/FindMode.vue'
+import NameMode from '@/components/NameMode.vue'
+import TrainingMode from '@/components/TrainingMode.vue'
+import TravelMode from '@/components/TravelMode.vue'
+import ExportMode from '@/components/ExportMode.vue'
+import {markRaw} from "vue";
 
 export const useGameStore = defineStore('game', {
     state: () => ({
         currentMode: localStorage.getItem('lastGameMode') || 'find',
         selectedLanguage: localStorage.getItem('lastLanguage') || 'NAME_DE',
-        gameModes: {
-            find: { name: 'Find Mode', description: 'Locate countries on the map' },
-            name: { name: 'Name Mode', description: 'Type country names' },
-            training: { name: 'Training Mode', description: 'Practice your geography skills' },
-            travel: { name: 'Travel Mode', description: 'Explore countries through travel' },
-            export: { name: 'Export Mode', description: 'Learn about country exports' }
-        },
+        modes: [
+            {
+                id: 'find',
+                displayName: 'Find Mode',
+                description: 'Locate countries on the map',
+                component: markRaw(FindMode)
+            },
+            {
+                id: 'name',
+                displayName: 'Name Mode',
+                description: 'Type country names',
+                component: markRaw(NameMode)
+            },
+            {
+                id: 'training',
+                displayName: 'Training Mode',
+                description: 'Practice your geography skills',
+                component: markRaw(TrainingMode)
+            },
+            {
+                id: 'travel',
+                displayName: 'Travel Mode',
+                description: 'Explore countries through travel',
+                component: markRaw(TravelMode)
+            },
+            {
+                id: 'export',
+                displayName: 'Export Mode',
+                description: 'Learn about country exports',
+                component: markRaw(ExportMode)
+            }
+        ],
         languages: {
             NAME_AR: 'Arabic',
             NAME_BN: 'Bengali',
@@ -53,10 +83,18 @@ export const useGameStore = defineStore('game', {
     },
     getters: {
         getCurrentModeDetails() {
-            return this.gameModes[this.currentMode]
+            return this.modes.find(mode => mode.id === this.currentMode)
+        },
+        getCurrentModeComponent() {
+            const currentMode = this.getCurrentModeDetails
+            return currentMode ? currentMode.component : null
         },
         getLanguageLabel() {
             return (languageCode) => this.languages[languageCode] || languageCode
+        },
+        getCurrentModeDisplayName() {
+            const currentMode = this.getCurrentModeDetails
+            return currentMode ? currentMode.displayName : this.currentMode
         }
     }
 })
