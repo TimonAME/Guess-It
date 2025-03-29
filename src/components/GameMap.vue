@@ -27,7 +27,7 @@ import 'leaflet/dist/leaflet.css'
 import { useMapStore } from '@/stores/mapStore'
 
 const props = defineProps(['selectedLanguage', 'currentGameMode'])
-const emit = defineEmits(['country-click', 'country-hover'])
+const emit = defineEmits(['country-click', 'country-hover', 'map-ready'])
 
 const mapStore = useMapStore()
 const zoom = ref(3)
@@ -35,6 +35,7 @@ const center = ref([20, 0])
 const map = ref(null)
 const geoJsonLayer = ref(null)
 const temporaryColoredFeature = ref(null)
+const isGeoJsonReady = ref(false)
 
 const maxBounds = [
   [-70, -300], // Southwest coordinates
@@ -87,21 +88,9 @@ const handleCountryClick = (e) => {
   const feature = e.layer.feature
   if (props.currentGameMode && !props.currentGameMode?.countries.includes(feature.properties.ADMIN)) return
 
-  emit('country-click', feature, (isCorrect) => {
-    if (!isCorrect) {
-      e.layer.setStyle({
-        fillColor: '#ff4444',
-        fillOpacity: 0.7
-      })
-      setTimeout(() => {
-        if (temporaryColoredFeature.value !== feature) {
-          e.layer.setStyle({
-            fillColor: '#8c322a',
-            fillOpacity: 0.7
-          })
-        }
-      }, 1000)
-    }
+  emit('country-click', {
+    feature,
+    layer: e.layer
   })
 }
 
@@ -209,6 +198,22 @@ const resetCountryColor = (country) => {
     })
   }
 }
+
+// Check if the map is already loaded
+onMounted(() => {
+  if (geoJsonLayer.value?.leafletObject) {
+    isGeoJsonReady.value = true
+    emit('map-ready')
+  }
+})
+
+// Check if the map is loaded after the geoJsonLayer is loaded
+watch(() => geoJsonLayer.value?.leafletObject, (newVal) => {
+  if (newVal && !isGeoJsonReady.value) {
+    isGeoJsonReady.value = true
+    emit('map-ready')
+  }
+})
 
 defineExpose({ highlightCountry, resetMapColors, resetCountryColor })
 </script>
