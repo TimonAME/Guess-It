@@ -27,7 +27,7 @@ import 'leaflet/dist/leaflet.css'
 import { useMapStore } from '@/stores/mapStore'
 
 const props = defineProps(['selectedLanguage', 'currentGameMode'])
-const emit = defineEmits(['country-click', 'country-hover', 'map-ready'])
+const emit = defineEmits(['country-click', 'country-hover'])
 
 const mapStore = useMapStore()
 const zoom = ref(3)
@@ -198,22 +198,6 @@ const resetCountryColor = (country) => {
     })
   }
 }
-
-// Check if the map is already loaded
-onMounted(() => {
-  if (geoJsonLayer.value?.leafletObject) {
-    isGeoJsonReady.value = true
-    emit('map-ready')
-  }
-})
-
-// Check if the map is loaded after the geoJsonLayer is loaded
-watch(() => geoJsonLayer.value?.leafletObject, (newVal) => {
-  if (newVal && !isGeoJsonReady.value) {
-    isGeoJsonReady.value = true
-    emit('map-ready')
-  }
-})
 
 defineExpose({ highlightCountry, resetMapColors, resetCountryColor })
 </script>

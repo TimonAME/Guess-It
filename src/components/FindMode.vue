@@ -89,7 +89,6 @@
   <game-map
       ref="gameMap"
       @country-click="handleCountryClick"
-      @map-ready="handleMapReady"
       :selected-language="selectedLanguage"
       :current-game-mode="currentGameMode"
   />
@@ -105,7 +104,6 @@ import AccuracyCounter from "@/components/AccuracyCounter.vue";
 import RoundCompleteDisplay from "@/components/RoundCompleteDisplay.vue";
 import HintsDisplay from "@/components/HintsDisplay.vue";
 import { useMapStore } from '@/stores/mapStore'
-import { useSaveGameStore } from '@/stores/saveGameStore'
 
 const mapStore = useMapStore()
 const props = defineProps(['selectedLanguage'])
@@ -118,8 +116,6 @@ const countries = ref([])
 const gameModes = ref(gameModeData)
 const currentGameMode = ref(null)
 const countryCapitals = ref(countryCapitalData)
-const saveGameStore = useSaveGameStore()
-const isMapReady = ref(false)
 
 const gameStats = ref({
   totalCountries: 0,       // Total countries in current mode
@@ -174,7 +170,7 @@ const handleCorrectGuess = () => {
 const selectGameMode = (modeKey) => {
   currentGameMode.value = gameModes.value[modeKey]
   isGameModesOpen.value = false
-  initializeGameMode()
+  resetGame()
 }
 
 const handleSkip = () => {
@@ -246,74 +242,6 @@ const resetGame = () => {
   }
 
   generateNewTarget()
-  saveGameStore.clearSave(currentGameMode.value.name)
-}
-
-// Initialize game mode when selected
-const initializeGameMode = () => {
-  if (!currentGameMode.value || !countries.value.length) return
-
-  // Try to load saved game first
-  const savedGame = saveGameStore.loadGame(currentGameMode.value.name)
-  if (savedGame) {
-    // Restore game stats from save
-    gameStats.value = savedGame.gameStats
-
-    // Make sure shownCountries exists (for backward compatibility)
-    if (!gameStats.value.shownCountries) {
-      gameStats.value.shownCountries = []
-    }
-
-    // If map is already ready, restore colors immediately
-    if (isMapReady.value && gameMap.value) {
-      gameMap.value.resetMapColors()
-      nextTick(() => {
-        restoreFoundCountries()
-      })
-    }
-
-    generateNewTarget()
-    return
-  }
-
-  // If no save exists, start new game
-  resetGame()
-}
-
-// Function to restore found countries
-const restoreFoundCountries = () => {
-  if (!gameMap.value) return
-
-  gameMap.value.resetMapColors()
-
-  // Ensure shownCountries exists
-  if (!gameStats.value.shownCountries) {
-    gameStats.value.shownCountries = []
-  }
-
-  // Highlight all found countries
-  gameStats.value.foundList.forEach(adminName => {
-    const country = countries.value.find(c => c.properties.ADMIN === adminName)
-    if (country) {
-      // If the country was shown (skipped), color it red
-      const wasShown = gameStats.value.shownCountries.includes(adminName)
-      gameMap.value.highlightCountry({
-        name: country.properties[props.selectedLanguage]
-      }, 0, wasShown ? '#ff4444' : '#42b983')
-    }
-  })
-}
-
-const handleMapReady = () => {
-  isMapReady.value = true
-
-  // If we have a saved game loaded, restore colors now
-  if (gameStats.value.foundList?.length > 0) {
-    gameMap.value.resetMapColors()
-    nextTick(() => {
-      restoreFoundCountries()
-    })
-  }
 }
 
 const toggleHints = () => {
@@ -338,17 +266,7 @@ onMounted(() => {
   if (mapStore.countriesData.features.length) loadCountries()
 })
 
-// Add autosave functionality:
-watch(gameStats, (newStats) => {
-  if (currentGameMode.value) {
-    saveGameStore.saveGame(currentGameMode.value.name, {
-      gameStats: newStats,
-      selectedLanguage: props.selectedLanguage
-    })
-  }
-}, { deep: true })
-
-// Add language change handler:
+// language change handler:
 watch(() => props.selectedLanguage, () => {
   if (!currentGameMode.value || !countries.value.length) return
 
