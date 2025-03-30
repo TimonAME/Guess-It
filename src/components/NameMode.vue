@@ -84,7 +84,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, watch } from 'vue'
+import {ref, onMounted, watch, nextTick} from 'vue'
 import GameMap from './GameMap.vue'
 import gameModeData from '@/assets/gameModes.json'
 import ScoreCounter from "@/components/ScoreCounter.vue";
@@ -153,6 +153,12 @@ const selectGameMode = (modeKey) => {
   currentGameMode.value = gameModes.value[modeKey]
   isGameModesOpen.value = false
   handleRestart()
+  nextTick(() => {
+    if (gameMap.value) {
+      console.log("Zooming to countries")
+      gameMap.value.zoomToCountries(currentGameMode.value.countries)
+    }
+  })
 }
 
 const handleRestart = () => {

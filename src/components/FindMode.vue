@@ -171,6 +171,12 @@ const selectGameMode = (modeKey) => {
   currentGameMode.value = gameModes.value[modeKey]
   isGameModesOpen.value = false
   resetGame()
+  nextTick(() => {
+    if (gameMap.value) {
+      console.log("Zooming to countries")
+      gameMap.value.zoomToCountries(currentGameMode.value.countries)
+    }
+  })
 }
 
 const handleSkip = () => {

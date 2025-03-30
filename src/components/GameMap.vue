@@ -35,7 +35,6 @@ const center = ref([20, 0])
 const map = ref(null)
 const geoJsonLayer = ref(null)
 const temporaryColoredFeature = ref(null)
-const isGeoJsonReady = ref(false)
 
 const maxBounds = [
   [-70, -300], // Southwest coordinates
@@ -133,6 +132,28 @@ const zoomToCountry = (layer) => {
   }
 }
 
+const zoomToCountries = (countries) => {
+  if (!map.value || !geoJsonLayer.value?.leafletObject) return
+
+  const layers = geoJsonLayer.value.leafletObject.getLayers()
+  const targetLayers = layers.filter(layer =>
+      countries.includes(layer.feature.properties.ADMIN)
+  )
+
+  if (targetLayers.length === 0) return
+
+  const bounds = targetLayers.reduce((acc, layer) => {
+    return acc.extend(layer.getBounds())
+  }, L.latLngBounds(targetLayers[0].getBounds().getNorthEast(), targetLayers[0].getBounds().getSouthWest()))
+
+  map.value.leafletObject.fitBounds(bounds, {
+    padding: [25, 25],
+    maxZoom: 8,
+    animate: true,
+    duration: 1
+  })
+}
+
 const resetMapColors = () => {
   if (!geoJsonLayer.value?.leafletObject || !props.currentGameMode) return
 
@@ -199,7 +220,7 @@ const resetCountryColor = (country) => {
   }
 }
 
-defineExpose({ highlightCountry, resetMapColors, resetCountryColor })
+defineExpose({ highlightCountry, resetMapColors, resetCountryColor, zoomToCountries })
 </script>
 
 <style scoped>
