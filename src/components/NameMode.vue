@@ -63,7 +63,6 @@
           <div v-for="(mode, key) in gameModes"
                :key="key"
                @click.stop="selectGameMode(key)"
-               class="w-full text-left px-4 py-2 text-sunset-gray hover:bg-sunset-100/10 transition-colors"
                :class="currentGameMode?.name === mode.name ? 'bg-sunset-100/20 text-sunset-400 font-medium' : ''"
           >
             <div class="font-medium">{{ mode.name }}</div>
@@ -79,6 +78,7 @@
       ref="gameMap"
       :selected-language="selectedLanguage"
       :current-game-mode="currentGameMode"
+      @country-click="handleCountryClick"
   />
 </template>
 
@@ -191,10 +191,67 @@ watch(() => mapStore.countriesData.features.length, (newLength) => {
   if (newLength > 0) loadCountries()
 })
 
-// Replace onMounted with:
 onMounted(() => {
   if (mapStore.countriesData.features.length) loadCountries()
 })
 
 watch(() => props.selectedLanguage, handleRestart)
+
+const handleCountryClick = ({ feature }) => {
+  if (gameStats.value.foundList.includes(feature.properties.ADMIN)) return
+
+  gameStats.value.attempts++
+  const isCorrect = feature.properties.ADMIN === targetCountry.value?.adminName
+
+  if (isCorrect) {
+    gameStats.value.correctAttempts++
+    gameMap.value.highlightCountry({
+      name: targetCountry.value.localizedName
+    }, 0, '#42b983')
+    handleCorrectGuess()
+  } else {
+    gameMap.value.highlightCountry({
+      name: feature.properties[props.selectedLanguage]
+    }, 1000, '#ff4444')
+  }
+}
+
+const handleCorrectGuess = () => {
+  gameStats.value.foundCountries++
+  gameStats.value.remainingCountries = gameStats.value.remainingCountries.filter(
+      adminName => adminName !== targetCountry.value.adminName
+  )
+  gameStats.value.foundList.push(targetCountry.value.adminName)
+
+  setTimeout(() => {
+    generateNewTarget()
+  }, 100)
+}
+
+const generateNewTarget = () => {
+  if (gameStats.value.remainingCountries.length === 0) {
+    targetCountry.value = null
+    return
+  }
+
+  const randomIndex = Math.floor(Math.random() * gameStats.value.remainingCountries.length)
+  const adminName = gameStats.value.remainingCountries[randomIndex]
+  const country = countries.value.find(c => c.properties.ADMIN === adminName)
+
+  const capital = countryCapitals.value.find(c => c.country === adminName)?.city || 'Unknown'
+  const flag = `https://flagsapi.com/${country.properties.ISO_A2}/flat/64.png`
+
+  targetCountry.value = {
+    localizedName: country.properties[props.selectedLanguage],
+    adminName: adminName,
+    id: country.properties.ISO_A3
+  }
+
+  hints.value = {
+    continent: country.properties.CONTINENT,
+    population: country.properties.POP_EST,
+    flag: flag,
+    capital: capital
+  }
+}
 </script>
