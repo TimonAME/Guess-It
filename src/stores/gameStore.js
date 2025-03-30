@@ -13,16 +13,16 @@ export const useGameStore = defineStore('game', {
         modes: [
             {
                 id: 'find',
-                displayName: 'Find Mode',
+                displayName: 'Find-It Mode',
                 description: 'Locate countries on the map',
                 component: markRaw(FindMode)
             },
             {
                 id: 'name',
-                displayName: 'Name Mode',
+                displayName: 'Name-It Mode',
                 description: 'Type country names',
                 component: markRaw(NameMode)
-            },
+            },/*
             {
                 id: 'training',
                 displayName: 'Training Mode',
@@ -40,7 +40,7 @@ export const useGameStore = defineStore('game', {
                 displayName: 'Export Mode',
                 description: 'Learn about country exports',
                 component: markRaw(ExportMode)
-            }
+            }*/
         ],
         languages: {
             NAME_AR: 'Arabic',

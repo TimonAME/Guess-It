@@ -63,6 +63,7 @@
           <div v-for="(mode, key) in gameModes"
                :key="key"
                @click.stop="selectGameMode(key)"
+               class="w-full text-left px-4 py-2 text-sunset-gray hover:bg-sunset-100/10 transition-colors"
                :class="currentGameMode?.name === mode.name ? 'bg-sunset-100/20 text-sunset-400 font-medium' : ''"
           >
             <div class="font-medium">{{ mode.name }}</div>
