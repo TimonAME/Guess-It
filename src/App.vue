@@ -91,12 +91,19 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import {onMounted, ref} from 'vue'
 import { useGameStore } from '@/stores/gameStore'
+import {useMapStore} from "@/stores/mapStore.js";
 
 const gameStore = useGameStore()
 const isGameModeOpen = ref(false)
 const isLanguageOpen = ref(false)
+const mapStore = useMapStore()
+
+onMounted(async () => {
+  console.log("Loading Country Data")
+  await mapStore.loadCountriesData()
+})
 
 const selectGameMode = (mode) => {
   gameStore.setCurrentMode(mode)
