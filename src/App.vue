@@ -6,7 +6,7 @@
         :selectedLanguage="gameStore.selectedLanguage"
     />
 
-    <div class="fixed top-4 h-fit right-4 flex sm:flex-row flex-col items-end sm:items-center gap-2 select-none z-10">
+    <div class="fixed top-12 h-fit right-4 flex sm:flex-row flex-col items-end sm:items-center gap-2 select-none z-10">
       <!-- Game Mode Selector -->
       <div
           class="relative"

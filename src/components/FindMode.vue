@@ -40,7 +40,7 @@
   </div>
 
   <!-- Game Mode Selector -->
-  <div class="fixed top-4 left-4 h-fit z-10">
+  <div class="fixed top-12 left-4 h-fit z-10">
     <div
         class="relative"
         @mouseenter="isGameModesOpen = true"
