@@ -53,6 +53,7 @@ const mapOptions = {
   minZoom: 2,
   maxZoom: 10,
   zoomControl: false,
+  attributionControl: false,
   dragging: true,
   maxBounds: maxBounds
 }
