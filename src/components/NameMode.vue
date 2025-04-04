@@ -28,13 +28,15 @@
   </div>
 
   <!-- Game Mode Selector -->
-  <div class="fixed top-12 left-4 h-fit z-10">
+  <div class="fixed top-4 left-4 h-fit z-10">
     <div
         class="relative"
-        @mouseenter="isGameModesOpen = true"
-        @mouseleave="isGameModesOpen = false"
         @click="isGameModesOpen = !isGameModesOpen"
     >
+    <!--
+    @mouseenter="isGameModesOpen = true"
+    @mouseleave="isGameModesOpen = false"
+    -->
       <button
           class="h-full bg-white/90 backdrop-blur-sm rounded-lg px-4 py-2 shadow-lg flex items-center gap-2 hover:bg-white/95 transition-all duration-200 border border-sunset-100/20"
       >
