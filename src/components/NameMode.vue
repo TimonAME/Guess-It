@@ -202,7 +202,7 @@ onMounted(() => {
   if (mapStore.countriesData.features.length) loadCountries()
 })
 
-watch(() => props.selectedLanguage, handleRestart)
+//watch(() => props.selectedLanguage, handleRestart)
 
 const handleCountryClick = ({ feature }) => {
   if (gameStats.value.foundList.includes(feature.properties.ADMIN)) return
