@@ -35,7 +35,7 @@ L.Icon.Default.mergeOptions({
   shadowUrl: new URL('leaflet/dist/images/marker-shadow.png', import.meta.url).href,
 })
 
-const props = defineProps(['selectedLanguage', 'currentGameMode'])
+const props = defineProps(['selectedLanguage', 'currentGameZone'])
 const emit = defineEmits(['country-click', 'country-hover'])
 
 const mapStore = useMapStore()
@@ -67,8 +67,8 @@ const geoJsonOptions = computed(() => ({
 
 const updateLayerStyle = (feature, layer) => {
   let isIncluded;
-  if (props.currentGameMode) {
-    isIncluded = props.currentGameMode?.countries.includes(feature.properties.ADMIN)
+  if (props.currentGameZone) {
+    isIncluded = props.currentGameZone?.countries.includes(feature.properties.ADMIN)
   } else {
     isIncluded = true
   }
@@ -82,7 +82,7 @@ const updateLayerStyle = (feature, layer) => {
   })
 }
 
-watch(() => props.currentGameMode, () => {
+watch(() => props.currentGameZone, () => {
   if (!geoJsonLayer.value?.leafletObject) return
 
   console.log("Gamemode changed")
@@ -95,7 +95,7 @@ watch(() => props.currentGameMode, () => {
 
 const handleCountryClick = (e) => {
   const feature = e.layer.feature
-  if (props.currentGameMode && !props.currentGameMode?.countries.includes(feature.properties.ADMIN)) return
+  if (props.currentGameZone && !props.currentGameZone?.countries.includes(feature.properties.ADMIN)) return
 
   emit('country-click', {
     feature,
@@ -105,7 +105,7 @@ const handleCountryClick = (e) => {
 
 const handleMouseOver = (e) => {
   const feature = e.layer.feature
-  if (props.currentGameMode && !props.currentGameMode?.countries.includes(feature.properties.ADMIN)) return
+  if (props.currentGameZone && !props.currentGameZone?.countries.includes(feature.properties.ADMIN)) return
 
   if (e.layer.feature !== temporaryColoredFeature.value) {
     e.layer.setStyle({
@@ -117,7 +117,7 @@ const handleMouseOver = (e) => {
 
 const handleMouseOut = (e) => {
   const feature = e.layer.feature
-  if (props.currentGameMode && !props.currentGameMode?.countries.includes(feature.properties.ADMIN)) return
+  if (props.currentGameZone && !props.currentGameZone?.countries.includes(feature.properties.ADMIN)) return
 
   if (e.layer.feature !== temporaryColoredFeature.value) {
     e.layer.setStyle({
@@ -165,11 +165,11 @@ const zoomToCountries = (countries) => {
 }
 
 const resetMapColors = () => {
-  if (!geoJsonLayer.value?.leafletObject || !props.currentGameMode) return
+  if (!geoJsonLayer.value?.leafletObject || !props.currentGameZone) return
 
   const layers = geoJsonLayer.value.leafletObject.getLayers()
   layers.forEach(layer => {
-    const isIncluded = props.currentGameMode.countries.includes(layer.feature.properties.ADMIN)
+    const isIncluded = props.currentGameZone.countries.includes(layer.feature.properties.ADMIN)
     layer.setStyle({
       fillColor: isIncluded ? '#8c322a' : '#d3d3d3',
       weight: isIncluded ? 1 : 0.5,

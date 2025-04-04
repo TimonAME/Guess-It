@@ -27,21 +27,21 @@
     <RoundCompleteDisplay class="sm:order-3 order-1" @click="handleRestart" v-if="gameStats.foundCountries === gameStats.totalCountries && gameStats.totalCountries !== 0" />
   </div>
 
-  <!-- Game Mode Selector -->
+  <!-- Game Zone Selector -->
   <div class="fixed top-4 left-4 h-fit z-10">
     <div
         class="relative"
-        @mouseenter="isGameModesOpen = true"
-        @mouseleave="isGameModesOpen = false"
-        @click="isGameModesOpen = !isGameModesOpen"
+        @mouseenter="isGameZonesOpen = true"
+        @mouseleave="isGameZonesOpen = false"
+        @click="isGameZonesOpen = !isGameZonesOpen"
     >
       <button
           class="h-full bg-white/90 backdrop-blur-sm rounded-lg px-4 py-2 shadow-lg flex items-center gap-2 hover:bg-white/95 transition-all duration-200 border border-sunset-100/20"
       >
-        <span class="text-sunset-gray font-medium">{{ currentGameMode?.name || 'Select Mode' }}</span>
+        <span class="text-sunset-gray font-medium">{{ currentGameZone?.name || 'Select Mode' }}</span>
         <svg
             class="hidden sm:block h-4 w-4 text-sunset-200 transform transition-transform duration-200"
-            :class="isGameModesOpen ? 'rotate-180' : ''"
+            :class="isGameZonesOpen ? 'rotate-180' : ''"
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
@@ -56,18 +56,18 @@
       </button>
 
       <div
-          v-show="isGameModesOpen"
+          v-show="isGameZonesOpen"
           class="absolute top-full left-0 w-64 bg-white/90 backdrop-blur-sm rounded-lg shadow-xl max-h-96 overflow-y-auto border border-sunset-100/20"
       >
         <div class="py-2 space-y-1">
-          <div v-for="(mode, key) in gameModes"
+          <div v-for="(zones, key) in gameZones"
                :key="key"
-               @click.stop="selectGameMode(key)"
+               @click.stop="selectGameZone(key)"
                class="w-full text-left px-4 py-2 text-sunset-gray hover:bg-sunset-100/10 transition-colors"
-               :class="currentGameMode?.name === mode.name ? 'bg-sunset-100/20 text-sunset-400 font-medium' : ''"
+               :class="currentGameZone?.name === zones.name ? 'bg-sunset-100/20 text-sunset-400 font-medium' : ''"
           >
-            <div class="font-medium">{{ mode.name }}</div>
-            <div class="text-sm opacity-80">{{ mode.description }}</div>
+            <div class="font-medium">{{ zones.name }}</div>
+            <div class="text-sm opacity-80">{{ zones.description }}</div>
           </div>
         </div>
       </div>
@@ -78,7 +78,7 @@
   <game-map
       ref="gameMap"
       :selected-language="selectedLanguage"
-      :current-game-mode="currentGameMode"
+      :current-game-zone="currentGameZone"
       @country-click="handleCountryClick"
   />
 </template>
@@ -86,7 +86,7 @@
 <script setup>
 import {ref, onMounted, watch, nextTick} from 'vue'
 import GameMap from './GameMap.vue'
-import gameModeData from '@/assets/gameModes.json'
+import gameZoneData from '@/assets/gameZones.json'
 import ScoreCounter from "@/components/ScoreCounter.vue";
 import AccuracyCounter from "@/components/AccuracyCounter.vue";
 import RoundCompleteDisplay from "@/components/RoundCompleteDisplay.vue";
@@ -96,9 +96,9 @@ const mapStore = useMapStore()
 const props = defineProps(['selectedLanguage'])
 const gameMap = ref(null)
 const countryInput = ref('')
-const isGameModesOpen = ref(false)
-const gameModes = ref(gameModeData)
-const currentGameMode = ref(null)
+const isGameZonesOpen = ref(false)
+const gameZones = ref(gameZoneData)
+const currentGameZone = ref(null)
 const countries = ref([])
 
 const gameStats = ref({
@@ -149,23 +149,23 @@ const checkCountry = () => {
   countryInput.value = ''
 }
 
-const selectGameMode = (modeKey) => {
-  currentGameMode.value = gameModes.value[modeKey]
-  isGameModesOpen.value = false
+const selectGameZone = (modeKey) => {
+  currentGameZone.value = gameZones.value[modeKey]
+  isGameZonesOpen.value = false
   handleRestart()
   nextTick(() => {
     if (gameMap.value) {
       console.log("Zooming to countries")
-      gameMap.value.zoomToCountries(currentGameMode.value.countries)
+      gameMap.value.zoomToCountries(currentGameZone.value.countries)
     }
   })
 }
 
 const handleRestart = () => {
-  if (!currentGameMode.value || !countries.value.length) return
+  if (!currentGameZone.value || !countries.value.length) return
 
   const filteredCountries = countries.value.filter(country =>
-      currentGameMode.value.countries.includes(country.properties.ADMIN)
+      currentGameZone.value.countries.includes(country.properties.ADMIN)
   )
 
   gameStats.value = {
@@ -189,8 +189,8 @@ const loadCountries = () => {
     countries.value = mapStore.countriesData.features
 
     // Select first game mode as default
-    const firstModeKey = Object.keys(gameModes.value)[0]
-    selectGameMode(firstModeKey)
+    const firstModeKey = Object.keys(gameZones.value)[0]
+    selectGameZone(firstModeKey)
   }
 }
 
