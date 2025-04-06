@@ -46,8 +46,8 @@ const geoJsonLayer = ref(null)
 const temporaryColoredFeature = ref(null)
 
 const maxBounds = [
-  [-70, -300], // Southwest coordinates
-  [180, 300]   // Northeast coordinates
+  [-300, -300], // Southwest coordinates
+  [300, 300]   // Northeast coordinates
 ]
 
 const mapOptions = {

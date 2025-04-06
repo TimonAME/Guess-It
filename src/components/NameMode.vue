@@ -28,51 +28,11 @@
   </div>
 
   <!-- Game Zone Selector -->
-  <div class="fixed top-4 left-4 h-fit z-10">
-    <div
-        class="relative"
-        @mouseenter="isGameZonesOpen = true"
-        @mouseleave="isGameZonesOpen = false"
-        @click="isGameZonesOpen = !isGameZonesOpen"
-    >
-      <button
-          class="h-full bg-white/90 backdrop-blur-sm rounded-lg px-4 py-2 shadow-lg flex items-center gap-2 hover:bg-white/95 transition-all duration-200 border border-sunset-100/20"
-      >
-        <span class="text-sunset-gray font-medium">{{ currentGameZone?.name || 'Select Mode' }}</span>
-        <svg
-            class="hidden sm:block h-4 w-4 text-sunset-200 transform transition-transform duration-200"
-            :class="isGameZonesOpen ? 'rotate-180' : ''"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-        >
-          <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M19 9l-7 7-7-7"
-          />
-        </svg>
-      </button>
-
-      <div
-          v-show="isGameZonesOpen"
-          class="absolute top-full left-0 w-64 bg-white/90 backdrop-blur-sm rounded-lg shadow-xl max-h-96 overflow-y-auto border border-sunset-100/20"
-      >
-        <div class="py-2 space-y-1">
-          <div v-for="(zones, key) in gameZones"
-               :key="key"
-               @click.stop="selectGameZone(key)"
-               class="w-full text-left px-4 py-2 text-sunset-gray hover:bg-sunset-100/10 transition-colors"
-               :class="currentGameZone?.name === zones.name ? 'bg-sunset-100/20 text-sunset-400 font-medium' : ''"
-          >
-            <div class="font-medium">{{ zones.name }}</div>
-            <div class="text-sm opacity-80">{{ zones.description }}</div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
+  <GameZoneSelector
+      :zones="gameZones"
+      :current-zone="currentGameZone"
+      @select="selectGameZone"
+  />
 
   <!-- Map -->
   <game-map
@@ -91,12 +51,12 @@ import ScoreCounter from "@/components/ScoreCounter.vue";
 import AccuracyCounter from "@/components/AccuracyCounter.vue";
 import RoundCompleteDisplay from "@/components/RoundCompleteDisplay.vue";
 import { useMapStore } from '@/stores/mapStore'
+import GameZoneSelector from "@/components/GameZoneSelector.vue";
 
 const mapStore = useMapStore()
 const props = defineProps(['selectedLanguage'])
 const gameMap = ref(null)
 const countryInput = ref('')
-const isGameZonesOpen = ref(false)
 const gameZones = ref(gameZoneData)
 const currentGameZone = ref(null)
 const countries = ref([])
@@ -151,11 +111,9 @@ const checkCountry = () => {
 
 const selectGameZone = (modeKey) => {
   currentGameZone.value = gameZones.value[modeKey]
-  isGameZonesOpen.value = false
   handleRestart()
   nextTick(() => {
     if (gameMap.value) {
-      console.log("Zooming to countries")
       gameMap.value.zoomToCountries(currentGameZone.value.countries)
     }
   })
