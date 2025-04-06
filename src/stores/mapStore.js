@@ -11,7 +11,7 @@ export const useMapStore = defineStore('map', () => {
 
         try {
             isLoading.value = true
-            const response = await fetch('/Guess-It/ne_10m_admin_0_countries_lakes_no_antarktika.json')
+            const response = await fetch('/Guess-It/ne_10m_admin_0_countries_lakes_no_antarktika_compressed.geojson')
             const data = await response.json()
 
             if (data && data.features) {
