@@ -1,5 +1,5 @@
 <template>
-  <div class="map-container">
+  <div class="map-container" v-if="mapStore.isInitialized">
     <l-map
         ref="map"
         v-model:zoom="zoom"
@@ -8,7 +8,6 @@
         @ready="map = $event.target"
     >
       <l-geo-json
-          v-if="mapStore.countriesData.features.length"
           :geojson="mapStore.countriesData"
           :options="geoJsonOptions"
           @click="handleCountryClick"
