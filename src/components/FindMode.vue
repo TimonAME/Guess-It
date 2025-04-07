@@ -39,73 +39,33 @@
     <RoundCompleteDisplay class="sm:order-4 order-1" @click="resetGame" v-if="gameStats.foundCountries === gameStats.totalCountries && gameStats.totalCountries !== 0" />
   </div>
 
-  <!-- Game Mode Selector -->
-  <div class="fixed top-4 left-4 h-fit z-10">
-    <div
-        class="relative"
-        @click="isGameModesOpen = !isGameModesOpen"
-    >
-    <!--
-    @mouseenter="isGameModesOpen = true"
-    @mouseleave="isGameModesOpen = false"
-    -->
-      <button
-          class="h-full bg-white/90 backdrop-blur-sm rounded-lg px-4 py-2 shadow-lg flex items-center gap-2 hover:bg-white/95 transition-all duration-200 border border-sunset-100/20"
-      >
-        <span class="text-sunset-gray font-medium">{{ currentGameMode?.name || 'Select Mode' }}</span>
-        <svg
-            class="hidden sm:block h-4 w-4 text-sunset-200 transform transition-transform duration-200"
-            :class="isGameModesOpen ? 'rotate-180' : ''"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-        >
-          <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M19 9l-7 7-7-7"
-          />
-        </svg>
-      </button>
-
-      <div
-          v-show="isGameModesOpen"
-          class="absolute top-full left-0 w-64 bg-white/90 backdrop-blur-sm rounded-lg shadow-xl max-h-96 overflow-y-auto border border-sunset-100/20"
-      >
-        <div class="py-2 space-y-1">
-          <div v-for="(mode, key) in gameModes"
-               :key="key"
-               @click.stop="selectGameMode(key)"
-               class="w-full text-left px-4 py-2 text-sunset-gray hover:bg-sunset-100/10 transition-colors"
-               :class="currentGameMode?.name === mode.name ? 'bg-sunset-100/20 text-sunset-400 font-medium' : ''"
-          >
-            <div class="font-medium">{{ mode.name }}</div>
-            <div class="text-sm opacity-80">{{ mode.description }}</div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
+  <!-- Game Zone Selector -->
+  <GameZoneSelector
+      :zones="gameZones"
+      :current-zone="currentGameZone"
+      @select="selectGameZone"
+  />
 
   <game-map
       ref="gameMap"
       @country-click="handleCountryClick"
       :selected-language="selectedLanguage"
-      :current-game-mode="currentGameMode"
+      :current-game-zone="currentGameZone"
   />
 </template>
 
 <script setup>
-import {ref, computed, onMounted, watch, nextTick} from 'vue'
+import {nextTick, onMounted, ref, watch} from 'vue'
 import GameMap from './GameMap.vue'
-import gameModeData from '@/assets/gameModes.json'
+import gameZoneData from '@/assets/gameZones.json'
 import countryCapitalData from '@/assets/country-by-capital-city.json'
 import ScoreCounter from "@/components/ScoreCounter.vue";
 import AccuracyCounter from "@/components/AccuracyCounter.vue";
 import RoundCompleteDisplay from "@/components/RoundCompleteDisplay.vue";
 import HintsDisplay from "@/components/HintsDisplay.vue";
-import { useMapStore } from '@/stores/mapStore'
+import {useMapStore} from '@/stores/mapStore'
+import GameZoneSelector from "@/components/GameZoneSelector.vue";
+import {useZoneProgressStore} from '@/stores/zoneProgressStore'
 
 const mapStore = useMapStore()
 const props = defineProps(['selectedLanguage'])
@@ -113,20 +73,21 @@ const gameMap = ref(null)
 const targetCountry = ref(null)
 const showHints = ref(false)
 const hints = ref(null)
-const isGameModesOpen = ref(false)
 const countries = ref([])
-const gameModes = ref(gameModeData)
-const currentGameMode = ref(null)
+const gameZones = ref(gameZoneData)
+const currentGameZone = ref(null)
+const currentGameZoneKey = ref(null)
 const countryCapitals = ref(countryCapitalData)
+const zoneProgressStore = useZoneProgressStore()
+const gameMode = 'find';
 
 const gameStats = ref({
   totalCountries: 0,       // Total countries in current mode
   foundCountries: 0,       // Number of found countries
   attempts: 0,             // Total attempts
   correctAttempts: 0,      // Correct attempts
-  remainingCountries: [],  // Array of remaining ADMIN names
   foundList: [],           // Array of found ADMIN names
-  shownCountries: []       // Array of countries that were shown (skipped)
+  shownCountries: [],      // Array of countries that were shown (skipped)
 })
 
 // Calculate accuracy based on correct attempts and total attempts for the Accuracy Display
@@ -159,9 +120,6 @@ const handleCountryClick = ({ feature }) => {
 // Correct guess handler
 const handleCorrectGuess = () => {
   gameStats.value.foundCountries++
-  gameStats.value.remainingCountries = gameStats.value.remainingCountries.filter(
-      adminName => adminName !== targetCountry.value.adminName
-  )
   gameStats.value.foundList.push(targetCountry.value.adminName)
 
   setTimeout(() => {
@@ -169,14 +127,34 @@ const handleCorrectGuess = () => {
   }, 100)
 }
 
-const selectGameMode = (modeKey) => {
-  currentGameMode.value = gameModes.value[modeKey]
-  isGameModesOpen.value = false
-  resetGame()
+const selectGameZone = (modeKey) => {
+  currentGameZone.value = gameZones.value[modeKey]
+  currentGameZoneKey.value = modeKey
+
+  // Zuerst Map zurücksetzen
+  if (gameMap.value) {
+    gameMap.value.resetMapColors()
+  }
+
+  // Prüfe auf gespeicherten Fortschritt
+  const savedProgress = zoneProgressStore.loadProgress(gameMode)
+  if (savedProgress && savedProgress.lastZone === modeKey) {
+    gameStats.value = savedProgress.gameStats
+
+    // generate new target
+    generateNewTarget()
+
+    // Verzögere die Neueinfärbung
+    nextTick(() => {
+      recolorCountries()
+    })
+  } else {
+    resetGame()
+  }
+
   nextTick(() => {
     if (gameMap.value) {
-      console.log("Zooming to countries")
-      gameMap.value.zoomToCountries(currentGameMode.value.countries)
+      gameMap.value.zoomToCountries(currentGameZone.value.countries)
     }
   })
 }
@@ -188,21 +166,25 @@ const handleSkip = () => {
 }
 
 const generateNewTarget = () => {
-  if (gameStats.value.remainingCountries.length === 0) {
+  if (gameStats.value.foundCountries === gameStats.value.totalCountries) {
     targetCountry.value = null
     return
   }
 
-  const randomIndex = Math.floor(Math.random() * gameStats.value.remainingCountries.length)
-  const adminName = gameStats.value.remainingCountries[randomIndex]
-  const country = countries.value.find(c => c.properties.ADMIN === adminName)
+  const remainingCountries = countries.value.filter(
+      country => !gameStats.value.foundList.includes(country.properties.ADMIN) &&
+          currentGameZone.value.countries.includes(country.properties.ADMIN)
+  )
 
-  const capital = countryCapitals.value.find(c => c.country === adminName)?.city || 'Unknown'
+  const randomIndex = Math.floor(Math.random() * remainingCountries.length)
+  const country = remainingCountries[randomIndex]
+
+  const capital = countryCapitals.value.find(c => c.country === country.properties.ADMIN)?.city || 'Unknown'
   const flag = `https://flagsapi.com/${country.properties.ISO_A2}/flat/64.png`
 
   targetCountry.value = {
     localizedName: country.properties[props.selectedLanguage],
-    adminName: adminName,
+    adminName: country.properties.ADMIN,
     id: country.properties.ISO_A3
   }
 
@@ -211,6 +193,11 @@ const generateNewTarget = () => {
     population: country.properties.POP_EST,
     flag: flag,
     capital: capital
+  }
+
+  // save progress to store if an attempt is made
+  if (gameStats.value.attempts > 0) {
+    zoneProgressStore.saveProgress(gameMode, currentGameZoneKey.value, gameStats.value)
   }
 }
 
@@ -230,10 +217,10 @@ const showCountry = () => {
 }
 
 const resetGame = () => {
-  if (!currentGameMode.value || !countries.value.length) return
+  if (!currentGameZone.value || !countries.value.length) return
 
   const filteredCountries = countries.value
-      .filter(country => currentGameMode.value.countries.includes(country.properties.ADMIN))
+      .filter(country => currentGameZone.value.countries.includes(country.properties.ADMIN))
       .map(country => country.properties.ADMIN)
 
   gameStats.value = {
@@ -241,8 +228,8 @@ const resetGame = () => {
     foundCountries: 0,
     attempts: 0,
     correctAttempts: 0,
-    remainingCountries: filteredCountries,
-    foundList: []
+    foundList: [],
+    shownCountries: []
   }
 
   if (gameMap.value) {
@@ -260,10 +247,30 @@ const loadCountries = () => {
   if (mapStore.countriesData.features.length) {
     countries.value = mapStore.countriesData.features
 
-    // Select first game mode as default
-    const firstModeKey = Object.keys(gameModes.value)[0]
-    selectGameMode(firstModeKey)
+    // load savegame from store if exists and preselect the last game zone
+    const savedProgress = zoneProgressStore.loadProgress(gameMode)
+    if (savedProgress) {
+      console.log("Find: Retrieving saved progress")
+
+      const lastGameZone = savedProgress.lastZone
+      const lastSaveGame = savedProgress.gameStats
+
+      selectGameZone(lastGameZone)
+      gameStats.value = lastSaveGame
+    } else {
+      // Select first game mode as default
+      const firstZoneKey = Object.keys(gameZones.value)[0]
+      selectGameZone(firstZoneKey)
+    }
   }
+}
+
+const recolorCountries = () => {
+  nextTick(() => {
+    console.log("Find: Recoloring Countries from savegame")
+    // TODO: on gamemode change countries dont get recolored
+    gameMap.value.recolorCountries(gameStats.value.foundList, gameStats.value.shownCountries)
+  })
 }
 
 watch(() => mapStore.countriesData.features.length, (newLength) => {
@@ -272,11 +279,21 @@ watch(() => mapStore.countriesData.features.length, (newLength) => {
 
 onMounted(() => {
   if (mapStore.countriesData.features.length) loadCountries()
+
+  // Stelle sicher, dass die Karte vollständig gerendert ist, bevor recolorCountries aufgerufen wird.
+  nextTick(() => {
+    // zusätzliches Timeout, falls der GeoJSON Layer noch nicht bereit ist
+    setTimeout(() => {
+      if (gameMap.value) {
+        recolorCountries()
+      }
+    }, 200)
+  })
 })
 
 // language change handler:
 watch(() => props.selectedLanguage, () => {
-  if (!currentGameMode.value || !countries.value.length) return
+  if (!currentGameZone.value || !countries.value.length) return
 
   // Update target country's localized name if one exists
   if (targetCountry.value) {

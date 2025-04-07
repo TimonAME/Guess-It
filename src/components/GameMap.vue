@@ -34,7 +34,7 @@ L.Icon.Default.mergeOptions({
   shadowUrl: new URL('leaflet/dist/images/marker-shadow.png', import.meta.url).href,
 })
 
-const props = defineProps(['selectedLanguage', 'currentGameMode'])
+const props = defineProps(['selectedLanguage', 'currentGameZone'])
 const emit = defineEmits(['country-click', 'country-hover'])
 
 const mapStore = useMapStore()
@@ -45,8 +45,8 @@ const geoJsonLayer = ref(null)
 const temporaryColoredFeature = ref(null)
 
 const maxBounds = [
-  [-70, -300], // Southwest coordinates
-  [180, 300]   // Northeast coordinates
+  [-300, -300], // Southwest coordinates
+  [300, 300]   // Northeast coordinates
 ]
 
 const mapOptions = {
@@ -66,8 +66,8 @@ const geoJsonOptions = computed(() => ({
 
 const updateLayerStyle = (feature, layer) => {
   let isIncluded;
-  if (props.currentGameMode) {
-    isIncluded = props.currentGameMode?.countries.includes(feature.properties.ADMIN)
+  if (props.currentGameZone) {
+    isIncluded = props.currentGameZone?.countries.includes(feature.properties.ADMIN)
   } else {
     isIncluded = true
   }
@@ -81,7 +81,7 @@ const updateLayerStyle = (feature, layer) => {
   })
 }
 
-watch(() => props.currentGameMode, () => {
+watch(() => props.currentGameZone, () => {
   if (!geoJsonLayer.value?.leafletObject) return
 
   console.log("Gamemode changed")
@@ -94,7 +94,7 @@ watch(() => props.currentGameMode, () => {
 
 const handleCountryClick = (e) => {
   const feature = e.layer.feature
-  if (props.currentGameMode && !props.currentGameMode?.countries.includes(feature.properties.ADMIN)) return
+  if (props.currentGameZone && !props.currentGameZone?.countries.includes(feature.properties.ADMIN)) return
 
   emit('country-click', {
     feature,
@@ -104,7 +104,7 @@ const handleCountryClick = (e) => {
 
 const handleMouseOver = (e) => {
   const feature = e.layer.feature
-  if (props.currentGameMode && !props.currentGameMode?.countries.includes(feature.properties.ADMIN)) return
+  if (props.currentGameZone && !props.currentGameZone?.countries.includes(feature.properties.ADMIN)) return
 
   if (e.layer.feature !== temporaryColoredFeature.value) {
     e.layer.setStyle({
@@ -116,7 +116,7 @@ const handleMouseOver = (e) => {
 
 const handleMouseOut = (e) => {
   const feature = e.layer.feature
-  if (props.currentGameMode && !props.currentGameMode?.countries.includes(feature.properties.ADMIN)) return
+  if (props.currentGameZone && !props.currentGameZone?.countries.includes(feature.properties.ADMIN)) return
 
   if (e.layer.feature !== temporaryColoredFeature.value) {
     e.layer.setStyle({
@@ -164,11 +164,11 @@ const zoomToCountries = (countries) => {
 }
 
 const resetMapColors = () => {
-  if (!geoJsonLayer.value?.leafletObject || !props.currentGameMode) return
+  if (!geoJsonLayer.value?.leafletObject || !props.currentGameZone) return
 
   const layers = geoJsonLayer.value.leafletObject.getLayers()
   layers.forEach(layer => {
-    const isIncluded = props.currentGameMode.countries.includes(layer.feature.properties.ADMIN)
+    const isIncluded = props.currentGameZone.countries.includes(layer.feature.properties.ADMIN)
     layer.setStyle({
       fillColor: isIncluded ? '#8c322a' : '#d3d3d3',
       weight: isIncluded ? 1 : 0.5,
@@ -229,7 +229,40 @@ const resetCountryColor = (country) => {
   }
 }
 
-defineExpose({ highlightCountry, resetMapColors, resetCountryColor, zoomToCountries })
+const recolorCountries = (foundList = [], shownList = []) => {
+  if (!geoJsonLayer.value?.leafletObject) return
+
+  const layers = geoJsonLayer.value.leafletObject.getLayers()
+  if (layers.length === 0) return
+
+  layers.forEach(layer => {
+    const admin = layer.feature.properties.ADMIN
+    if (shownList.includes(admin)) {
+      // Rot für gezeigte Länder
+      layer.setStyle({
+        fillColor: '#ff4444',
+        weight: 1,
+        opacity: 1,
+        color: 'white',
+        fillOpacity: 0.7
+      })
+    } else if (foundList.includes(admin)) {
+      // Grün für gefundene Länder (nicht gezeigt)
+      layer.setStyle({
+        fillColor: '#42b983',
+        weight: 1,
+        opacity: 1,
+        color: 'white',
+        fillOpacity: 0.7
+      })
+    } else {
+      // Standard-Stil für nicht gefundene/gezeigte Länder
+      updateLayerStyle(layer.feature, layer)
+    }
+  })
+}
+
+defineExpose({ highlightCountry, resetMapColors, resetCountryColor, zoomToCountries, recolorCountries })
 </script>
 
 <style scoped>
