@@ -125,7 +125,7 @@ const selectGameZone = (modeKey) => {
 
   // Check for saved progress
   const savedProgress = zoneProgressStore.loadProgress(gameMode)
-  if (savedProgress && savedProgress.lastZone === modeKey) {
+  if (savedProgress.lastZone !== null && savedProgress.lastZone === modeKey) {
     console.log("Retrieving saved progress")
     gameStats.value = savedProgress.gameStats
 

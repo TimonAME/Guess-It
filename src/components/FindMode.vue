@@ -138,7 +138,7 @@ const selectGameZone = (modeKey) => {
 
   // Prüfe auf gespeicherten Fortschritt
   const savedProgress = zoneProgressStore.loadProgress(gameMode)
-  if (savedProgress && savedProgress.lastZone === modeKey) {
+  if (savedProgress.lastZone !== null && savedProgress.lastZone === modeKey) {
     gameStats.value = savedProgress.gameStats
 
     // generate new target
