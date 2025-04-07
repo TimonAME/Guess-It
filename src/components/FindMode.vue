@@ -55,7 +55,7 @@
 </template>
 
 <script setup>
-import {ref, computed, onMounted, watch, nextTick} from 'vue'
+import {nextTick, onMounted, ref, watch} from 'vue'
 import GameMap from './GameMap.vue'
 import gameZoneData from '@/assets/gameZones.json'
 import countryCapitalData from '@/assets/country-by-capital-city.json'
@@ -63,8 +63,9 @@ import ScoreCounter from "@/components/ScoreCounter.vue";
 import AccuracyCounter from "@/components/AccuracyCounter.vue";
 import RoundCompleteDisplay from "@/components/RoundCompleteDisplay.vue";
 import HintsDisplay from "@/components/HintsDisplay.vue";
-import { useMapStore } from '@/stores/mapStore'
+import {useMapStore} from '@/stores/mapStore'
 import GameZoneSelector from "@/components/GameZoneSelector.vue";
+import {useZoneProgressStore} from '@/stores/zoneProgressStore'
 
 const mapStore = useMapStore()
 const props = defineProps(['selectedLanguage'])
@@ -75,16 +76,18 @@ const hints = ref(null)
 const countries = ref([])
 const gameZones = ref(gameZoneData)
 const currentGameZone = ref(null)
+const currentGameZoneKey = ref(null)
 const countryCapitals = ref(countryCapitalData)
+const zoneProgressStore = useZoneProgressStore()
+const gameMode = 'find';
 
 const gameStats = ref({
   totalCountries: 0,       // Total countries in current mode
   foundCountries: 0,       // Number of found countries
   attempts: 0,             // Total attempts
   correctAttempts: 0,      // Correct attempts
-  remainingCountries: [],  // Array of remaining ADMIN names
   foundList: [],           // Array of found ADMIN names
-  shownCountries: []       // Array of countries that were shown (skipped)
+  shownCountries: [],      // Array of countries that were shown (skipped)
 })
 
 // Calculate accuracy based on correct attempts and total attempts for the Accuracy Display
@@ -117,9 +120,6 @@ const handleCountryClick = ({ feature }) => {
 // Correct guess handler
 const handleCorrectGuess = () => {
   gameStats.value.foundCountries++
-  gameStats.value.remainingCountries = gameStats.value.remainingCountries.filter(
-      adminName => adminName !== targetCountry.value.adminName
-  )
   gameStats.value.foundList.push(targetCountry.value.adminName)
 
   setTimeout(() => {
@@ -129,7 +129,19 @@ const handleCorrectGuess = () => {
 
 const selectGameZone = (modeKey) => {
   currentGameZone.value = gameZones.value[modeKey]
+  currentGameZoneKey.value = modeKey
+
   resetGame()
+
+  // check if gamezone has a saved progress
+  const savedProgress = zoneProgressStore.loadProgress(gameMode)
+  if (savedProgress) {
+    const lastGameZone = savedProgress.lastZone
+      if (lastGameZone === currentGameZoneKey.value) {
+        gameStats.value = savedProgress.gameStats
+      }
+  }
+
   nextTick(() => {
     if (gameMap.value) {
       gameMap.value.zoomToCountries(currentGameZone.value.countries)
@@ -144,21 +156,25 @@ const handleSkip = () => {
 }
 
 const generateNewTarget = () => {
-  if (gameStats.value.remainingCountries.length === 0) {
+  if (gameStats.value.foundCountries === gameStats.value.totalCountries) {
     targetCountry.value = null
     return
   }
 
-  const randomIndex = Math.floor(Math.random() * gameStats.value.remainingCountries.length)
-  const adminName = gameStats.value.remainingCountries[randomIndex]
-  const country = countries.value.find(c => c.properties.ADMIN === adminName)
+  const remainingCountries = countries.value.filter(
+      country => !gameStats.value.foundList.includes(country.properties.ADMIN) &&
+          currentGameZone.value.countries.includes(country.properties.ADMIN)
+  )
 
-  const capital = countryCapitals.value.find(c => c.country === adminName)?.city || 'Unknown'
+  const randomIndex = Math.floor(Math.random() * remainingCountries.length)
+  const country = remainingCountries[randomIndex]
+
+  const capital = countryCapitals.value.find(c => c.country === country.properties.ADMIN)?.city || 'Unknown'
   const flag = `https://flagsapi.com/${country.properties.ISO_A2}/flat/64.png`
 
   targetCountry.value = {
     localizedName: country.properties[props.selectedLanguage],
-    adminName: adminName,
+    adminName: country.properties.ADMIN,
     id: country.properties.ISO_A3
   }
 
@@ -167,6 +183,11 @@ const generateNewTarget = () => {
     population: country.properties.POP_EST,
     flag: flag,
     capital: capital
+  }
+
+  // save progress to store if an attempt is made
+  if (gameStats.value.attempts > 0) {
+    zoneProgressStore.saveProgress(gameMode, currentGameZoneKey.value, gameStats.value)
   }
 }
 
@@ -197,7 +218,6 @@ const resetGame = () => {
     foundCountries: 0,
     attempts: 0,
     correctAttempts: 0,
-    remainingCountries: filteredCountries,
     foundList: []
   }
 
@@ -216,9 +236,20 @@ const loadCountries = () => {
   if (mapStore.countriesData.features.length) {
     countries.value = mapStore.countriesData.features
 
-    // Select first game mode as default
-    const firstZoneKey = Object.keys(gameZones.value)[0]
-    selectGameZone(firstZoneKey)
+    // load savegame from store if exists and preselect the last game zone
+    const savedProgress = zoneProgressStore.loadProgress(gameMode)
+    if (savedProgress) {
+      const lastGameZone = savedProgress.lastZone
+      const lastSaveGame = savedProgress.gameStats
+
+      selectGameZone(lastGameZone)
+      gameStats.value = lastSaveGame
+      // TODO: recolor the countries
+    } else {
+      // Select first game mode as default
+      const firstZoneKey = Object.keys(gameZones.value)[0]
+      selectGameZone(firstZoneKey)
+    }
   }
 }
 
