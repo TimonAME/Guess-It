@@ -266,6 +266,7 @@ const loadCountries = () => {
       selectGameZone(lastGameZone)
       gameStats.value = lastSaveGame
     } else {
+      console.log("Find: Selected Default load")
       // Select first game mode as default
       const firstZoneKey = Object.keys(gameZones.value)[0]
       selectGameZone(firstZoneKey)
