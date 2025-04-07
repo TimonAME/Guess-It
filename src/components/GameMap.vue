@@ -230,7 +230,40 @@ const resetCountryColor = (country) => {
   }
 }
 
-defineExpose({ highlightCountry, resetMapColors, resetCountryColor, zoomToCountries })
+const recolorCountries = (foundList = [], shownList = []) => {
+  if (!geoJsonLayer.value?.leafletObject) return
+
+  const layers = geoJsonLayer.value.leafletObject.getLayers()
+  if (layers.length === 0) return
+
+  layers.forEach(layer => {
+    const admin = layer.feature.properties.ADMIN
+    if (shownList.includes(admin)) {
+      // Rot für gezeigte Länder
+      layer.setStyle({
+        fillColor: '#ff4444',
+        weight: 1,
+        opacity: 1,
+        color: 'white',
+        fillOpacity: 0.7
+      })
+    } else if (foundList.includes(admin)) {
+      // Grün für gefundene Länder (nicht gezeigt)
+      layer.setStyle({
+        fillColor: '#42b983',
+        weight: 1,
+        opacity: 1,
+        color: 'white',
+        fillOpacity: 0.7
+      })
+    } else {
+      // Standard-Stil für nicht gefundene/gezeigte Länder
+      updateLayerStyle(layer.feature, layer)
+    }
+  })
+}
+
+defineExpose({ highlightCountry, resetMapColors, resetCountryColor, zoomToCountries, recolorCountries })
 </script>
 
 <style scoped>

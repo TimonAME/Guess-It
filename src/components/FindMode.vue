@@ -131,15 +131,25 @@ const selectGameZone = (modeKey) => {
   currentGameZone.value = gameZones.value[modeKey]
   currentGameZoneKey.value = modeKey
 
-  resetGame()
+  // Zuerst Map zurücksetzen
+  if (gameMap.value) {
+    gameMap.value.resetMapColors()
+  }
 
-  // check if gamezone has a saved progress
+  // Prüfe auf gespeicherten Fortschritt
   const savedProgress = zoneProgressStore.loadProgress(gameMode)
-  if (savedProgress) {
-    const lastGameZone = savedProgress.lastZone
-      if (lastGameZone === currentGameZoneKey.value) {
-        gameStats.value = savedProgress.gameStats
-      }
+  if (savedProgress && savedProgress.lastZone === modeKey) {
+    gameStats.value = savedProgress.gameStats
+
+    // generate new target
+    generateNewTarget()
+
+    // Verzögere die Neueinfärbung
+    nextTick(() => {
+      recolorCountries()
+    })
+  } else {
+    resetGame()
   }
 
   nextTick(() => {
@@ -187,6 +197,7 @@ const generateNewTarget = () => {
 
   // save progress to store if an attempt is made
   if (gameStats.value.attempts > 0) {
+    console.log(gameStats.value)
     zoneProgressStore.saveProgress(gameMode, currentGameZoneKey.value, gameStats.value)
   }
 }
@@ -218,7 +229,8 @@ const resetGame = () => {
     foundCountries: 0,
     attempts: 0,
     correctAttempts: 0,
-    foundList: []
+    foundList: [],
+    shownCountries: []
   }
 
   if (gameMap.value) {
@@ -239,18 +251,27 @@ const loadCountries = () => {
     // load savegame from store if exists and preselect the last game zone
     const savedProgress = zoneProgressStore.loadProgress(gameMode)
     if (savedProgress) {
+      console.log("Retrieving saved progress")
+
       const lastGameZone = savedProgress.lastZone
       const lastSaveGame = savedProgress.gameStats
 
       selectGameZone(lastGameZone)
       gameStats.value = lastSaveGame
-      // TODO: recolor the countries
     } else {
       // Select first game mode as default
       const firstZoneKey = Object.keys(gameZones.value)[0]
       selectGameZone(firstZoneKey)
     }
   }
+}
+
+const recolorCountries = () => {
+  nextTick(() => {
+    console.log("Recoloring Countries from savegame")
+    // TODO: on gamemode change countries dont get recolored
+    gameMap.value.recolorCountries(gameStats.value.foundList, gameStats.value.shownCountries)
+  })
 }
 
 watch(() => mapStore.countriesData.features.length, (newLength) => {
