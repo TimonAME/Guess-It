@@ -211,6 +211,16 @@ watch(() => mapStore.countriesData.features.length, (newLength) => {
 
 onMounted(() => {
   if (mapStore.countriesData.features.length) loadCountries()
+
+  // Stelle sicher, dass die Karte vollständig gerendert ist, bevor recolorCountries aufgerufen wird.
+  nextTick(() => {
+    // zusätzliches Timeout, falls der GeoJSON Layer noch nicht bereit ist
+    setTimeout(() => {
+      if (gameMap.value) {
+        recolorCountries()
+      }
+    }, 200)
+  })
 })
 
 // Watch for language changes
