@@ -51,21 +51,24 @@ import AccuracyCounter from "@/components/AccuracyCounter.vue";
 import RoundCompleteDisplay from "@/components/RoundCompleteDisplay.vue";
 import { useMapStore } from '@/stores/mapStore'
 import GameZoneSelector from "@/components/GameZoneSelector.vue";
+import { useZoneProgressStore } from '@/stores/zoneProgressStore'
 
 const mapStore = useMapStore()
+const zoneProgressStore = useZoneProgressStore()
 const props = defineProps(['selectedLanguage'])
 const gameMap = ref(null)
 const countryInput = ref('')
 const gameZones = ref(gameZoneData)
 const currentGameZone = ref(null)
+const currentGameZoneKey = ref(null)
 const countries = ref([])
+const gameMode = 'name';
 
 const gameStats = ref({
   totalCountries: 0,
   foundCountries: 0,
   attempts: 0,
   correctAttempts: 0,
-  remainingCountries: [],
   foundList: []
 })
 
@@ -82,19 +85,19 @@ const checkCountry = () => {
 
   const normalizedInput = countryInput.value.trim().toLowerCase()
 
-  const foundCountry = gameStats.value.remainingCountries.find(country => {
-    return Object.entries(country.properties)
-        .filter(([key]) => key.startsWith('NAME_'))
-        .some(([_, value]) => String(value).toLowerCase() === normalizedInput);
-  });
+  // Check if the country exists in the current game zone and hasn't been found yet
+  const foundCountry = countries.value.find(country =>
+      currentGameZone.value.countries.includes(country.properties.ADMIN) &&
+      !gameStats.value.foundList.includes(country.properties.ADMIN) &&
+      Object.entries(country.properties)
+          .filter(([key]) => key.startsWith('NAME_'))
+          .some(([_, value]) => String(value).toLowerCase() === normalizedInput)
+  );
 
   if (foundCountry) {
     gameStats.value.correctAttempts++
     gameStats.value.foundCountries++
-    gameStats.value.remainingCountries = gameStats.value.remainingCountries.filter(
-        c => c.properties[props.selectedLanguage].toLowerCase() !== normalizedInput
-    )
-    gameStats.value.foundList.push(foundCountry)
+    gameStats.value.foundList.push(foundCountry.properties.ADMIN)
 
     if (gameMap.value) {
       const countryData = {
@@ -103,6 +106,9 @@ const checkCountry = () => {
       }
       gameMap.value.highlightCountry(countryData, 0, '#42b983')
     }
+
+    // Save progress after successful guess
+    zoneProgressStore.saveProgress(gameMode, currentGameZoneKey.value, gameStats.value)
   }
 
   countryInput.value = ''
@@ -110,10 +116,50 @@ const checkCountry = () => {
 
 const selectGameZone = (modeKey) => {
   currentGameZone.value = gameZones.value[modeKey]
-  handleRestart()
+  currentGameZoneKey.value = modeKey
+
+  // Reset the map first
+  if (gameMap.value) {
+    gameMap.value.resetMapColors()
+  }
+
+  // Check for saved progress
+  const savedProgress = zoneProgressStore.loadProgress(gameMode)
+  if (savedProgress && savedProgress.lastZone === modeKey) {
+    console.log("get save from store")
+    gameStats.value = savedProgress.gameStats
+
+    // Delay recoloring to ensure map is ready
+    nextTick(() => {
+      recolorCountries()
+    })
+  } else {
+    console.log("reset")
+
+    handleRestart()
+  }
+
   nextTick(() => {
     if (gameMap.value) {
       gameMap.value.zoomToCountries(currentGameZone.value.countries)
+    }
+  })
+}
+
+const recolorCountries = () => {
+  nextTick(() => {
+    console.log("Recoloring Countries from savegame")
+    if (gameMap.value && gameStats.value.foundList) {
+      gameStats.value.foundList.forEach(adminName => {
+        const country = countries.value.find(c => c.properties.ADMIN === adminName)
+        if (country) {
+          const countryData = {
+            name: country.properties[props.selectedLanguage],
+            id: country.id
+          }
+          gameMap.value.highlightCountry(countryData, 0, '#42b983')
+        }
+      })
     }
   })
 }
@@ -130,7 +176,6 @@ const handleRestart = () => {
     foundCountries: 0,
     attempts: 0,
     correctAttempts: 0,
-    remainingCountries: filteredCountries,
     foundList: []
   }
 
@@ -145,9 +190,18 @@ const loadCountries = () => {
   if (mapStore.countriesData.features.length) {
     countries.value = mapStore.countriesData.features
 
-    // Select first game mode as default
-    const firstModeKey = Object.keys(gameZones.value)[0]
-    selectGameZone(firstModeKey)
+    // Load savegame from store if exists and preselect the last game zone
+    const savedProgress = zoneProgressStore.loadProgress(gameMode)
+    if (savedProgress && savedProgress.lastZone) {
+      console.log("Retrieving saved progress")
+      const lastGameZone = savedProgress.lastZone
+
+      selectGameZone(lastGameZone)
+    } else {
+      // Select first game mode as default
+      const firstModeKey = Object.keys(gameZones.value)[0]
+      selectGameZone(firstModeKey)
+    }
   }
 }
 
@@ -157,5 +211,13 @@ watch(() => mapStore.countriesData.features.length, (newLength) => {
 
 onMounted(() => {
   if (mapStore.countriesData.features.length) loadCountries()
+})
+
+// Watch for language changes
+watch(() => props.selectedLanguage, () => {
+  if (gameStats.value.foundList && gameMap.value) {
+    gameMap.value.resetMapColors()
+    recolorCountries()
+  }
 })
 </script>
