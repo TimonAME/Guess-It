@@ -243,13 +243,21 @@ const toggleHints = () => {
   showHints.value = !showHints.value
 }
 
+const recolorCountries = () => {
+  nextTick(() => {
+    console.log("Find: Recoloring Countries from savegame")
+    // TODO: on gamemode change countries dont get recolored
+    gameMap.value.recolorCountries(gameStats.value.foundList, gameStats.value.shownCountries)
+  })
+}
+
 const loadCountries = () => {
   if (mapStore.countriesData.features.length) {
     countries.value = mapStore.countriesData.features
 
     // load savegame from store if exists and preselect the last game zone
     const savedProgress = zoneProgressStore.loadProgress(gameMode)
-    if (savedProgress) {
+    if (savedProgress.lastZone !== null) {
       console.log("Find: Retrieving saved progress")
 
       const lastGameZone = savedProgress.lastZone
@@ -263,14 +271,6 @@ const loadCountries = () => {
       selectGameZone(firstZoneKey)
     }
   }
-}
-
-const recolorCountries = () => {
-  nextTick(() => {
-    console.log("Find: Recoloring Countries from savegame")
-    // TODO: on gamemode change countries dont get recolored
-    gameMap.value.recolorCountries(gameStats.value.foundList, gameStats.value.shownCountries)
-  })
 }
 
 watch(() => mapStore.countriesData.features.length, (newLength) => {

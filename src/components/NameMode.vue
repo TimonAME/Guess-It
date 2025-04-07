@@ -190,7 +190,7 @@ const loadCountries = () => {
 
     // Load savegame from store if exists and preselect the last game zone
     const savedProgress = zoneProgressStore.loadProgress(gameMode)
-    if (savedProgress && savedProgress.lastZone) {
+    if (savedProgress.lastZone !== null) {
       console.log("Name: Retrieving saved progress")
       const lastGameZone = savedProgress.lastZone
 
