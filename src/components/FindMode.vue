@@ -197,7 +197,6 @@ const generateNewTarget = () => {
 
   // save progress to store if an attempt is made
   if (gameStats.value.attempts > 0) {
-    console.log(gameStats.value)
     zoneProgressStore.saveProgress(gameMode, currentGameZoneKey.value, gameStats.value)
   }
 }
@@ -251,7 +250,7 @@ const loadCountries = () => {
     // load savegame from store if exists and preselect the last game zone
     const savedProgress = zoneProgressStore.loadProgress(gameMode)
     if (savedProgress) {
-      console.log("Retrieving saved progress")
+      console.log("Find: Retrieving saved progress")
 
       const lastGameZone = savedProgress.lastZone
       const lastSaveGame = savedProgress.gameStats
@@ -268,7 +267,7 @@ const loadCountries = () => {
 
 const recolorCountries = () => {
   nextTick(() => {
-    console.log("Recoloring Countries from savegame")
+    console.log("Find: Recoloring Countries from savegame")
     // TODO: on gamemode change countries dont get recolored
     gameMap.value.recolorCountries(gameStats.value.foundList, gameStats.value.shownCountries)
   })

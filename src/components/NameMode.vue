@@ -126,7 +126,7 @@ const selectGameZone = (modeKey) => {
   // Check for saved progress
   const savedProgress = zoneProgressStore.loadProgress(gameMode)
   if (savedProgress && savedProgress.lastZone === modeKey) {
-    console.log("get save from store")
+    console.log("Retrieving saved progress")
     gameStats.value = savedProgress.gameStats
 
     // Delay recoloring to ensure map is ready
@@ -134,8 +134,6 @@ const selectGameZone = (modeKey) => {
       recolorCountries()
     })
   } else {
-    console.log("reset")
-
     handleRestart()
   }
 
@@ -148,7 +146,7 @@ const selectGameZone = (modeKey) => {
 
 const recolorCountries = () => {
   nextTick(() => {
-    console.log("Recoloring Countries from savegame")
+    console.log("Name: Recoloring Countries from savegame")
     if (gameMap.value && gameStats.value.foundList) {
       gameStats.value.foundList.forEach(adminName => {
         const country = countries.value.find(c => c.properties.ADMIN === adminName)
@@ -193,7 +191,7 @@ const loadCountries = () => {
     // Load savegame from store if exists and preselect the last game zone
     const savedProgress = zoneProgressStore.loadProgress(gameMode)
     if (savedProgress && savedProgress.lastZone) {
-      console.log("Retrieving saved progress")
+      console.log("Name: Retrieving saved progress")
       const lastGameZone = savedProgress.lastZone
 
       selectGameZone(lastGameZone)
