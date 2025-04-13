@@ -1,5 +1,6 @@
 <template>
-  <div class="min-h-screen relative background-pattern select-none">
+  <LandingPage v-if="true"/>
+  <div v-else class="min-h-screen relative background-pattern select-none">
     <!-- Dynamische Komponente basierend auf dem aktuellen Modus -->
     <component
         :is="gameStore.getCurrentModeComponent"
@@ -94,6 +95,7 @@
 import {onMounted, ref} from 'vue'
 import { useGameStore } from '@/stores/gameStore'
 import {useMapStore} from "@/stores/mapStore.js";
+import LandingPage from "@/components/LandingPage.vue";
 
 const gameStore = useGameStore()
 const isGameModeOpen = ref(false)
