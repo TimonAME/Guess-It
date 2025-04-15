@@ -7,3 +7,7 @@
     --color-sunset-400: #8c322a;
     --color-sunset-gray: #2e3440;
 }
+
+body {
+    font-family: 'Titillium Web', sans-serif;
+}

@@ -1,5 +1,5 @@
 <template>
-  <LandingPage v-if="true"/>
+  <LandingPage v-if="true" class="background-pattern"/>
   <div v-else class="min-h-screen relative background-pattern select-none">
     <!-- Dynamische Komponente basierend auf dem aktuellen Modus -->
     <component

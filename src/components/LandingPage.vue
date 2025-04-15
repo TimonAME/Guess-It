@@ -1,36 +1,24 @@
 <template>
-  <div class="min-h-screen background-pattern select-none">
+  <div class="min-h-screen select-none">
     <!-- Hero Section -->
     <div class="relative overflow-hidden">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        <div class="text-center">
-          <h1 class="text-5xl font-bold text-sunset-gray mb-4">
-            Guess-It
-          </h1>
-          <p class="text-xl text-sunset-gray/80 mb-8">
-            Test and improve your geography knowledge through interactive games
-          </p>
-          <div class="flex justify-center space-x-4 mb-12">
-            <button class="px-6 py-2 bg-sunset-100/20 text-sunset-400 rounded-lg hover:bg-sunset-100/30 transition-colors shadow-md border border-sunset-100/20">
-              Get Started
-            </button>
-            <button class="px-6 py-2 bg-white/90 backdrop-blur-sm text-sunset-gray rounded-lg hover:bg-white/95 transition-colors shadow-md border border-sunset-100/20">
-              How to Play
-            </button>
-          </div>
-        </div>
+      <div class="relative h-[75vh] flex items-center justify-center">
+        <!-- Background Map -->
+        <!--<EuropeSVG class="absolute inset-0 w-full h-full" />-->
+        <img src="@/assets/world.png" alt="World Map" class="absolute inset-0 w-full h-full object-cover" />
 
-        <!-- Stats Section -->
-        <div class="flex justify-center flex-wrap gap-4 max-w-5xl mx-auto mb-12">
-          <div v-for="(stat, index) in statsData" :key="index"
-               class="min-w-64 bg-white/90 backdrop-blur-sm rounded-lg p-4 shadow-lg border border-sunset-100/20 hover:shadow-xl transition-all duration-200">
-            <div class="text-2xl font-semibold text-sunset-gray mb-1">{{ stat.value }}</div>
-            <div class="text-sunset-gray/70 text-sm">{{ stat.label }}</div>
-          </div>
-        </div>
+        <!-- Title -->
+        <h1 class="text-[256px] font-bold text-sunset-gray/90 relative z-10 pointer-events-none">
+          Guess-It
+        </h1>
 
+        <!-- Gradient Overlay -->
+        <div class="absolute bottom-0 left-0 w-full h-16 bg-gradient-to-t from-[#f4f4f4] to-transparent pointer-events-none"></div>
+      </div>
+
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
         <!-- Combined Game Mode and Save Selection -->
-        <h2 class="text-2xl font-semibold text-sunset-gray mb-6 text-center">
+        <h2 class="text-2xl font-semibold text-sunset-gray mb-6 text-center mt-20">
           Play different Gamemodes
         </h2>
         <div class="flex justify-center flex-wrap gap-6 max-w-5xl mx-auto mb-16">
@@ -191,6 +179,8 @@
 import { computed, ref } from 'vue'
 import { useGameStore } from '@/stores/gameStore'
 import { useZoneProgressStore } from '@/stores/zoneProgressStore'
+import WorldSVG from "@/components/WorldSVG.vue";
+import EuropeSVG from "@/components/EuropeSVG.vue";
 
 const gameStore = useGameStore()
 const zoneProgressStore = useZoneProgressStore()
@@ -231,19 +221,7 @@ const deleteSaveGame = (mode) => {
   zoneProgressStore.resetProgress(mode)
   showDeleteModal.value = false
 }
-
-// Sample stats data
-const statsData = [
-  { label: 'Countries Explored', value: '193' },
-  { label: 'Languages', value: '26' },
-  { label: 'Country Game-Modes', value: '10+' }
-]
 </script>
 
 <style scoped>
-.background-pattern {
-  background-color: #f7fafc;
-  background-image: radial-gradient(#e2e8f0 1px, transparent 1px);
-  background-size: 20px 20px;
-}
 </style>
