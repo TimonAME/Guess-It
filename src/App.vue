@@ -1,5 +1,9 @@
 <template>
-  <LandingPage v-if="true" class="background-pattern"/>
+  <LandingPage
+      v-if="showLanding"
+      class="background-pattern"
+      @close-landing="handleLandingClose"
+  />
   <div v-else class="min-h-screen relative background-pattern select-none">
     <!-- Dynamische Komponente basierend auf dem aktuellen Modus -->
     <component
@@ -8,6 +12,17 @@
     />
 
     <div class="fixed top-4 h-fit right-4 flex sm:flex-row flex-col items-end sm:items-center gap-2 select-none z-10">
+      <!-- Home Button -->
+      <button
+          @click="goToLanding"
+          class="bg-white/90 backdrop-blur-sm rounded-lg px-4 py-2 shadow-lg flex items-center gap-2 hover:bg-white/95 transition-all duration-200 border border-sunset-100/20 cursor-pointer"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-sunset-200" viewBox="0 0 20 20" fill="currentColor">
+          <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z" />
+        </svg>
+        <span class="hidden sm:block">Home</span>
+      </button>
+
       <!-- Game Mode Selector -->
       <div
           class="relative"
@@ -101,15 +116,33 @@ const gameStore = useGameStore()
 const isGameModeOpen = ref(false)
 const isLanguageOpen = ref(false)
 const mapStore = useMapStore()
+const showLanding = ref(!localStorage.getItem('lastGameMode'))
 
 onMounted(async () => {
   console.log("Loading Country Data")
   await mapStore.loadCountriesData()
+
+  // If there's a last game mode, set it in the store
+  const lastGameMode = localStorage.getItem('lastGameMode')
+  if (lastGameMode) {
+    gameStore.setCurrentMode(lastGameMode)
+  }
 })
 
 const selectGameMode = (mode) => {
   gameStore.setCurrentMode(mode)
   isGameModeOpen.value = false
+  showLanding.value = false
+  localStorage.setItem('lastGameMode', mode)
+}
+
+const goToLanding = () => {
+  showLanding.value = true
+  localStorage.removeItem('lastGameMode')
+}
+
+const handleLandingClose = () => {
+  showLanding.value = false
 }
 </script>
 
