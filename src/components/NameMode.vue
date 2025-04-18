@@ -11,6 +11,10 @@
             class="px-4 py-1 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-300"
             :disabled="gameStats.foundCountries === gameStats.totalCountries"
         />
+        <button @click="checkCountry"
+                class="px-4 py-1 bg-blue-100 text-blue-700 rounded-md hover:bg-blue-200 transition-colors">
+          Enter
+        </button>
         <button @click="handleRestart"
                 class="px-4 py-1 bg-red-100 text-red-700 rounded-md hover:bg-red-200 transition-colors">
           Restart
