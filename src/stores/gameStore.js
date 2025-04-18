@@ -5,6 +5,7 @@ import TrainingMode from '@/components/TrainingMode.vue'
 import TravelMode from '@/components/TravelMode.vue'
 import ExportMode from '@/components/ExportMode.vue'
 import {markRaw} from "vue";
+import FlagMode from "@/components/FlagMode.vue";
 
 export const useGameStore = defineStore('game', {
     state: () => ({
@@ -13,34 +14,22 @@ export const useGameStore = defineStore('game', {
         modes: [
             {
                 id: 'find',
-                displayName: 'Find-It Mode',
+                displayName: 'Find Mode',
                 description: 'Locate countries on the map',
                 component: markRaw(FindMode)
             },
             {
                 id: 'name',
-                displayName: 'Name-It Mode',
+                displayName: 'Name Mode',
                 description: 'Type country names',
                 component: markRaw(NameMode)
-            },/*
-            {
-                id: 'training',
-                displayName: 'Training Mode',
-                description: 'Practice your geography skills',
-                component: markRaw(TrainingMode)
             },
             {
-                id: 'travel',
-                displayName: 'Travel Mode',
-                description: 'Explore countries through travel',
-                component: markRaw(TravelMode)
-            },
-            {
-                id: 'export',
-                displayName: 'Export Mode',
-                description: 'Learn about country exports',
-                component: markRaw(ExportMode)
-            }*/
+                id: 'flag',
+                displayName: 'Flag Mode',
+                description: 'Identify countries by their flags',
+                component: markRaw(FlagMode)
+            }
         ],
         languages: {
             NAME_AR: 'Arabic',
