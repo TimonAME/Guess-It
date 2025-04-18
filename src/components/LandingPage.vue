@@ -19,7 +19,7 @@
               Test your knowledge of world geography with our interactive globe-trotting challenge
             </p>
             <div class="mt-8 flex justify-center">
-              <button @click="scrollToModes" class="pointer-events-auto bg-sunset-400 hover:bg-sunset-500 text-white px-8 py-3 rounded-lg flex items-center transition-all transform hover:scale-105 shadow-lg">
+              <button @click="scrollToModes" class="pointer-events-auto bg-sunset-400 text-white px-8 py-3 rounded-lg flex items-center transition-all transform hover:scale-105 shadow-lg">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
                   <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd" />
                 </svg>
@@ -170,9 +170,8 @@
           <div class="mb-4 md:mb-0">
             <div class="flex items-center mb-2">
               <div class="rounded-lg p-2 bg-sunset-100/20 text-sunset-400 mr-3">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
-                </svg>
+                <!-- favicon as logo -->
+                <img src="/favicon.ico" alt="Logo" class="h-5 w-5">
               </div>
               <h2 class="text-2xl font-bold text-sunset-gray">Guess-It</h2>
             </div>
