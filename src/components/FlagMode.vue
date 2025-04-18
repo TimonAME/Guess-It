@@ -23,13 +23,13 @@
     </div>
 
     <div v-if="gameStats.foundCountries !== gameStats.totalCountries || gameStats.totalCountries === 0"
-         class="sm:order-3 order-2 bg-white/90 backdrop-blur-sm rounded-lg px-6 py-3 shadow-lg border border-sunset-100/20 text-center">
+         class="sm:order-3 order-2 bg-white/90 backdrop-blur-sm rounded-lg px-3 py-3 shadow-lg border border-sunset-100/20 text-center">
       <img
           v-if="targetCountry"
           :src="`https://flagcdn.com/w160/${targetCountry.iso.toLowerCase()}.png`"
           :srcset="`https://flagcdn.com/w320/${targetCountry.iso.toLowerCase()}.png 2x`"
           width="160"
-          class="mx-auto mb-2"
+          class="mx-auto shadow"
           alt="Country Flag"
       />
     </div>
